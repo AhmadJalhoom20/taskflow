@@ -378,8 +378,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-xl transition-colors relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
-          {/* Left: Brand & Clean Breadcrumb */}
-          <div className="flex items-center gap-3">
+          {/* Left: Brand & Clean Contextual Breadcrumb */}
+          <div className="flex items-center gap-2.5">
             <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
               <Logo size="small" />
             </Link>
@@ -394,6 +394,22 @@ export default function Navbar() {
             >
               {t('dashboard')}
             </Link>
+            {pathname === '/projects/new' && (
+              <>
+                <span className="text-slate-300 dark:text-slate-700 text-xs font-light">/</span>
+                <span className="px-2.5 py-1 rounded-md font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 shadow-xs text-xs">
+                  {t('newProject')}
+                </span>
+              </>
+            )}
+            {pathname?.startsWith('/projects/') && pathname !== '/projects/new' && (
+              <>
+                <span className="text-slate-300 dark:text-slate-700 text-xs font-light">/</span>
+                <span className="px-2.5 py-1 rounded-md font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 shadow-xs text-xs">
+                  {pathname.includes('/settings') ? t('projectSettingsTitle') : t('kanbanBoard')}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Right Actions: Search, Language Switcher, SQL status, Theme, User */}

@@ -15,6 +15,7 @@ import {
   SafetyCertificateOutlined,
   DatabaseOutlined,
   TeamOutlined,
+  ThunderboltOutlined,
 } from '@ant-design/icons';
 import { Button, Avatar, Tag } from 'antd';
 
@@ -395,52 +396,166 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. CORE CAPABILITIES (3 Distinct Features, Zero Marketing Clichés) */}
+      {/* 3. CORE CAPABILITIES (Asymmetric Bento Architecture, Zero AI Slop) */}
       <section className="py-16 px-4 max-w-5xl mx-auto border-t border-slate-200 dark:border-slate-800">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Feature 1 */}
-          <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
-              <AppstoreOutlined />
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-semibold uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 mb-2">
+            <ThunderboltOutlined />
+            <span>{isArabic ? 'القدرات الهندسية الأساسية' : 'Core Architecture'}</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {isArabic ? 'بنية تشغيلية مصممة لفرق البرمجة عالية الإنتاجية' : 'Engineered for high-throughput development teams'}
+          </h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
+            {isArabic
+              ? 'تخلص من التعقيد الزائد والقوالب الجاهزة مع واجهات حقيقية صممت للدقة، الأمان، وسرعة الاستجابة.'
+              : 'Eliminate unnecessary bloat and synthetic templates with interfaces crafted for speed, data density, and security.'}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Bento Item 1: Wide (2 cols) - Interactive Kanban Pipeline */}
+          <div className="lg:col-span-2 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] p-6 flex flex-col justify-between shadow-xs">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-sm font-semibold">
+                    <AppstoreOutlined />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {isArabic ? 'محرك مسارات كانبان التفاعلي' : 'Interactive Kanban Lifecycle'}
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 tnum">
+                  99.8% SLA
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+                {isArabic
+                  ? 'سحب وإفلات فوري، تبويبات استجابة ذكية لشاشات الهواتف (<768px)، ومزامنة حالة المهام دون وميض أو تأخير في العرض.'
+                  : 'Zero-latency drag-and-drop orchestration, viewport-adaptive mobile segmented tabs, and optimistic status reconciliation.'}
+              </p>
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {isArabic ? 'لوحات كانبان تفاعلية' : 'Interactive Kanban Workflows'}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-              {isArabic
-                ? 'تنظيم المهام وسحبها بين أعمدة الإنجاز، مع تتبع دقيق للأولويات وتاريخ الاستحقاق وتبويبات مخصصة للهواتف الذكية.'
-                : 'Drag-and-drop task progression with clear priority indicators, due dates, and dedicated mobile viewports.'}
-            </p>
+
+            {/* Visual Mini Pipeline Artifact */}
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[#1e2430]">
+              <div className="grid grid-cols-3 gap-2.5">
+                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-[#162032] border border-slate-200/80 dark:border-[#1f293d] space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-500">
+                    <span>{isArabic ? 'الانتظار' : 'TODO'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-700 dark:text-slate-300 truncate">
+                    {isArabic ? 'مراجعة معمارية' : 'Code audit'}
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-amber-500/[0.04] dark:bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-amber-600 dark:text-amber-400">
+                    <span>{isArabic ? 'قيد التنفيذ' : 'IN PROG'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-800 dark:text-slate-200 truncate">
+                    {isArabic ? 'تكامل الواجهات' : 'REST API hook'}
+                  </div>
+                </div>
+                <div className="p-2.5 rounded-lg bg-emerald-500/[0.04] dark:bg-emerald-500/10 border border-emerald-500/20 space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-mono text-emerald-600 dark:text-emerald-400">
+                    <span>{isArabic ? 'مكتملة' : 'DONE'}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-800 dark:text-slate-200 truncate">
+                    {isArabic ? 'فحص الأمان' : 'Auth rate limit'}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Feature 2 */}
-          <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
-              <TeamOutlined />
+          {/* Bento Item 2: Compact (1 col) - RBAC Role Governance */}
+          <div className="rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] p-6 flex flex-col justify-between shadow-xs">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center text-sm font-semibold">
+                  <SafetyCertificateOutlined />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  {isArabic ? 'حوكمة الصلاحيات (RBAC)' : 'Multi-Tenant RBAC'}
+                </h3>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
+                {isArabic
+                  ? 'عزل صارم للعمليات الحساسة مع حماية تأكيد الحذف ومنع التعديلات العشوائية.'
+                  : 'Fine-grained permission boundaries guarding destructive operations with confirmation gates.'}
+              </p>
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {isArabic ? 'حوكمة وصلاحيات واضحة' : 'Team Role Governance'}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-              {isArabic
-                ? 'فصل الصلاحيات بين مالك المشروع وأعضاء الفريق، مع حماية العمليات الحساسة وإعدادات الفريق من التعديل العشوائي.'
-                : 'Clear permission boundaries between project owners and collaborators, safeguarding critical settings and records.'}
-            </p>
+
+            {/* Matrix of capabilities */}
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-[#1e2430] space-y-2 font-mono text-[11px]">
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-[#1e2430]">
+                <span className="text-slate-500">{isArabic ? 'حذف المشروع' : 'Delete Project'}</span>
+                <span className="text-rose-600 dark:text-rose-400 font-bold">{isArabic ? 'المالك فقط' : 'Owner Only'}</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-slate-100 dark:border-[#1e2430]">
+                <span className="text-slate-500">{isArabic ? 'دعوة أعضاء' : 'Invite Members'}</span>
+                <span className="text-amber-600 dark:text-amber-400 font-bold">{isArabic ? 'المالك فقط' : 'Owner Only'}</span>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-slate-500">{isArabic ? 'تنفيذ المهام' : 'Execute Tasks'}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">{isArabic ? 'الجميع' : 'All Roles'}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Feature 3 */}
-          <div className="p-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111827] space-y-3 shadow-xs">
-            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
-              <DatabaseOutlined />
+          {/* Bento Item 3: Full Width (3 cols) - Dual Environment & Telemetry */}
+          <div className="lg:col-span-3 rounded-xl border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] p-6 shadow-xs">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-sm font-semibold">
+                  <DatabaseOutlined />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    {isArabic ? 'بنية تشغيلية مزدوجة مع محدد طلبات ذكي' : 'Dual Environment Engine & Hardened Security'}
+                  </h3>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                    SQLite WAL Journal &bull; RFC 9457 &bull; Multi-tier Limiter (Cookie/IP)
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono bg-slate-100 dark:bg-[#162032] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#1f293d] tnum">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Local :5001 &bull; Cloud Auto-Failover
+                </span>
+              </div>
             </div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              {isArabic ? 'تشغيل مزدوج واستقرار دائم' : 'Dual Environment Reliability'}
-            </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-              {isArabic
-                ? 'دعم التشغيل المحلي والسحابي مع عزل تام لرموز المصادقة، ومحدد طلبات ذكي يحمي المنصة من الاستخدام المكثف.'
-                : 'Simultaneous support for local and cloud environments, scoped authentication tokens, and intelligent rate limiting.'}
-            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 dark:border-[#1e2430] text-xs">
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/70 dark:border-[#1f293d]">
+                <span className="text-[10px] font-mono text-slate-400 block mb-1 uppercase tracking-wider">
+                  {isArabic ? 'عزل البيانات المحلي' : 'Local Persistence'}
+                </span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium">
+                  {isArabic ? 'قاعدة بيانات SQLite محلية دون حاجة لاتصال خارجي' : 'Zero-dependency local SQLite file with foreign keys'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/70 dark:border-[#1f293d]">
+                <span className="text-[10px] font-mono text-slate-400 block mb-1 uppercase tracking-wider">
+                  {isArabic ? 'محدد طلبات متعدد الطبقات' : 'Multi-tier Limiting'}
+                </span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium">
+                  {isArabic ? 'حظر ملف تعريف الارتباط أولاً ثم تصعيد الحظر للـ IP' : 'Tier 1 Cookie block (5m) escalating to Tier 2 IP block (30m)'}
+                </span>
+              </div>
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#0b0f19] border border-slate-200/70 dark:border-[#1f293d]">
+                <span className="text-[10px] font-mono text-slate-400 block mb-1 uppercase tracking-wider">
+                  {isArabic ? 'استجابات معيارية RFC 9457' : 'Standard Errors'}
+                </span>
+                <span className="text-slate-800 dark:text-slate-200 font-medium">
+                  {isArabic ? 'أخطاء معيارية بدون تسريب لمسارات النظام أو الشيفرة' : 'Strict schema contracts with zero internal trace leaks'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </section>

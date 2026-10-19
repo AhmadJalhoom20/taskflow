@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t, language, formatDateLocalized, isRTL } = useLanguage();
+  const isArabic = language === 'ar';
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -156,9 +157,9 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                       <AppstoreOutlined className="text-lg" />
                     </div>
-                    <Tag color="blue" className="m-0 text-[10px] font-semibold uppercase tracking-wider">
-                      Recommended
-                    </Tag>
+                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300">
+                      {isArabic ? 'موصى به' : 'Recommended'}
+                    </span>
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
@@ -203,9 +204,9 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
                       <CompassOutlined className="text-lg" />
                     </div>
-                    <Tag color="purple" className="m-0 text-[10px] font-semibold uppercase tracking-wider">
-                      Discovery &amp; Specs
-                    </Tag>
+                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-slate-200 dark:border-[#1e2430] bg-slate-100 dark:bg-[#162032] text-slate-700 dark:text-slate-300">
+                      {isArabic ? 'تخطيط ومواصفات' : 'Specs & Roadmap'}
+                    </span>
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
@@ -250,9 +251,9 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                       <BugOutlined className="text-lg" />
                     </div>
-                    <Tag color="green" className="m-0 text-[10px] font-semibold uppercase tracking-wider">
-                      Reliability &amp; Ops
-                    </Tag>
+                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-slate-200 dark:border-[#1e2430] bg-slate-100 dark:bg-[#162032] text-slate-700 dark:text-slate-300">
+                      {isArabic ? 'عمليات واستقرار' : 'Reliability & Ops'}
+                    </span>
                   </div>
                   <div>
                     <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
@@ -606,7 +607,7 @@ export default function DashboardPage() {
                               );
                             })}
                             {proj.memberIds.length > 5 && (
-                              <span className="text-[10px] ml-1.5 px-1.5 py-0.2 rounded font-mono font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 group-hover/roster:bg-blue-500/20 border border-blue-500/20 tnum transition-colors">
+                              <span className="text-[10px] ms-1.5 px-1.5 py-0.2 rounded font-mono font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 group-hover/roster:bg-blue-500/20 border border-blue-500/20 tnum transition-colors">
                                 +{proj.memberIds.length - 5}
                               </span>
                             )}

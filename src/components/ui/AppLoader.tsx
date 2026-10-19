@@ -25,10 +25,12 @@ export default function AppLoader({
         className={`${dimensions} rounded-full border-slate-300 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 animate-spin`}
         aria-hidden="true"
       />
-      {tip && (
+      {tip ? (
         <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
           {tip}
         </span>
+      ) : (
+        <span className="sr-only">Loading...</span>
       )}
     </div>
   );

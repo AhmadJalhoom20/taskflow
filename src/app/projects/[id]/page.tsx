@@ -592,7 +592,7 @@ export default function ProjectDetailsPage() {
 
             {/* Team Roster tags (Max 5 with +more modal) */}
             <div className="flex items-center gap-1.5 flex-wrap pt-1 text-xs">
-              <Text type="secondary" className="mr-1 text-slate-400"><TeamOutlined /> {t('teamRoster')}:</Text>
+              <Text type="secondary" className="me-1 text-slate-400"><TeamOutlined /> {t('teamRoster')}:</Text>
               {project.memberIds.slice(0, 5).map((mId) => {
                 const info = project.memberDetails?.[mId];
                 const isProjectOwner = mId === project.ownerId;
@@ -603,7 +603,7 @@ export default function ProjectDetailsPage() {
                     className="text-[11px] border-slate-200 dark:border-[#1e2430] bg-slate-50 dark:bg-[#171c26] text-slate-600 dark:text-slate-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     title={t('teamRoster')}
                   >
-                    {isProjectOwner && <CrownOutlined className="text-amber-500 mr-1" />}
+                    {isProjectOwner && <CrownOutlined className="text-amber-500 me-1" />}
                     {info?.displayName || mId}
                   </Tag>
                 );
@@ -621,7 +621,7 @@ export default function ProjectDetailsPage() {
           </div>
 
           {/* Right Header Actions & Velocity Progress */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-l lg:border-slate-100 lg:dark:border-[#1e2430] lg:pl-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-s lg:border-slate-100 lg:dark:border-[#1e2430] lg:ps-6">
             <div className="w-full sm:w-44 space-y-1">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">{t('sprintVelocity')}</span>
@@ -715,7 +715,7 @@ export default function ProjectDetailsPage() {
 
           {/* Right: Filters */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1 text-slate-400 text-xs pl-1">
+            <div className="flex items-center gap-1 text-slate-400 text-xs ps-1">
               <FilterOutlined className="text-xs" />
             </div>
 
@@ -729,7 +729,7 @@ export default function ProjectDetailsPage() {
             >
               {t('overdueFilter')}
               {overdueCount > 0 && (
-                <span className="ml-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-600 dark:text-rose-400 tnum">
+                <span className="ms-1 text-[10px] font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-600 dark:text-rose-400 tnum">
                   {overdueCount}
                 </span>
               )}
@@ -926,7 +926,7 @@ export default function ProjectDetailsPage() {
                 }}
                 className={`${
                   mobileKanbanCol === 'todo' ? 'block' : 'hidden md:block'
-                } rounded-2xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2.5px] before:bg-slate-400 dark:before:bg-slate-500 ${
+                } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'todo'
                     ? 'border-blue-600 bg-blue-500/10 ring-2 ring-blue-500/20 shadow-md'
                     : 'border-slate-200/90 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
@@ -988,7 +988,7 @@ export default function ProjectDetailsPage() {
                 }}
                 className={`${
                   mobileKanbanCol === 'in_progress' ? 'block' : 'hidden md:block'
-                } rounded-2xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2.5px] before:bg-amber-500 ${
+                } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'in_progress'
                     ? 'border-blue-600 bg-blue-500/10 ring-2 ring-blue-500/20 shadow-md'
                     : 'border-slate-200/90 dark:border-white/[0.08] bg-amber-500/[0.02] dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
@@ -1051,7 +1051,7 @@ export default function ProjectDetailsPage() {
                 }}
                 className={`${
                   mobileKanbanCol === 'done' ? 'block' : 'hidden md:block'
-                } rounded-2xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden before:absolute before:top-0 before:left-0 before:right-0 before:h-[2.5px] before:bg-emerald-500 ${
+                } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'done'
                     ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20 shadow-md'
                     : 'border-slate-200/90 dark:border-white/[0.08] bg-emerald-500/[0.02] dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'

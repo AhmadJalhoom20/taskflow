@@ -15,6 +15,7 @@ import {
   ExclamationCircleOutlined,
   MailOutlined,
   ArrowLeftOutlined,
+  ArrowRightOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import {
@@ -197,12 +198,16 @@ export default function ProjectSettingsPage() {
     return (
       <Card className="max-w-md mx-auto text-center py-12 mt-8">
         <ExclamationCircleOutlined className="text-3xl text-red-500 mb-3" />
-        <Title level={4}>Access Denied</Title>
+        <Title level={4}>{isRTL ? 'تم رفض الوصول' : 'Access Denied'}</Title>
         <Text type="secondary" className="block mb-6">
-          Only the Project Owner has permission to manage project settings and membership.
+          {isRTL
+            ? 'مالك المشروع فقط يملك صلاحية تعديل الإعدادات وإدارة الأعضاء.'
+            : 'Only the Project Owner has permission to manage project settings and membership.'}
         </Text>
         <Link href={`/projects/${projectId}`}>
-          <Button type="primary" icon={<ArrowLeftOutlined />}>Return to Project</Button>
+          <Button type="primary" icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />}>
+            {isRTL ? 'العودة للمشروع' : 'Return to Project'}
+          </Button>
         </Link>
       </Card>
     );
@@ -215,7 +220,7 @@ export default function ProjectSettingsPage() {
       {/* Back Link & Header */}
       <div>
         <Link href={`/projects/${project.id}`}>
-          <Button type="link" icon={<ArrowLeftOutlined />} className="!px-0 mb-2">
+          <Button type="link" icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />} className="!px-0 mb-2">
             {t('backToProject')} {project.name}
           </Button>
         </Link>
