@@ -62,8 +62,8 @@ function NewProjectForm() {
       key: 'sprint',
       name: isArabic ? 'سبرنت هندسي برمجى' : 'Engineering Sprint',
       tag: isArabic ? 'أجايل وكانبان' : 'Agile & Kanban',
-      badgeColor: 'blue',
-      icon: <AppstoreOutlined className="text-blue-500 text-lg" />,
+      badgeColor: 'gold',
+      icon: <AppstoreOutlined className="text-amber-500 text-lg" />,
       defaultName: isArabic ? 'سبرنت المنصة الأساسية 2026' : 'Platform Core: Sprint 2026',
       defaultDesc: isArabic
         ? 'سبرنت هندسي برمجى يركز على استقرار الـ API الخلفية ومعالجة المهام الحرجة ومحطات الإطلاق.'
@@ -199,7 +199,7 @@ function NewProjectForm() {
                 setSelectedTemplate(null);
                 form.setFieldsValue({ name: '', description: '' });
               }}
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              className="text-xs text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
             >
               {t('clearTemplate')}
             </button>
@@ -215,15 +215,15 @@ function NewProjectForm() {
                 onClick={() => handleSelectTemplate(tmpl)}
                 className={`p-3.5 rounded-xl border text-start cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 ring-2 ring-blue-500/20 shadow-sm'
-                    : 'border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] hover:border-slate-300 dark:hover:border-slate-700'
+                    ? 'border-amber-500 bg-amber-500/10 dark:bg-amber-500/15 ring-2 ring-amber-500/20 shadow-sm'
+                    : 'border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#161c26] border border-slate-200/80 dark:border-[#1e2430] flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#161d2e] border border-slate-200/80 dark:border-[#1b2336] flex items-center justify-center">
                     {tmpl.icon}
                   </div>
-                  {isSelected && <CheckCircleFilled className="text-blue-600 text-sm" />}
+                  {isSelected && <CheckCircleFilled className="text-amber-500 text-sm" />}
                 </div>
                 <div className="font-semibold text-xs text-slate-900 dark:text-slate-100">
                   {tmpl.name}
@@ -239,10 +239,10 @@ function NewProjectForm() {
 
       <Card
         variant="outlined"
-        className="relative border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-sm rounded-xl overflow-hidden"
+        className="relative border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-sm rounded-xl overflow-hidden"
         title={
           <div className="flex items-center gap-3 py-1.5">
-            <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
               <FolderAddOutlined className="text-base" />
             </div>
             <div>
@@ -267,8 +267,8 @@ function NewProjectForm() {
         )}
 
         {/* Informative Governance Callout */}
-        <div className="p-3.5 mb-6 rounded-lg bg-slate-50 dark:bg-[#161c26] border border-slate-200/80 dark:border-[#1e2430] flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-          <InfoCircleOutlined className="text-blue-500 text-sm mt-0.5 flex-shrink-0" />
+        <div className="p-3.5 mb-6 rounded-lg bg-slate-50 dark:bg-[#141a29] border border-slate-200/80 dark:border-[#1b2336] flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
+          <InfoCircleOutlined className="text-amber-500 text-sm mt-0.5 flex-shrink-0" />
           <div className="leading-relaxed">
             {t('governanceCallout')}
           </div>
@@ -334,7 +334,7 @@ function NewProjectForm() {
               type="primary"
               htmlType="submit"
               loading={isSubmitting}
-              className="!bg-blue-600 hover:!bg-blue-500 !border-blue-600 text-white font-medium px-5 rounded-lg shadow-none"
+              className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold px-6 rounded-lg shadow-sm shadow-amber-500/20"
             >
               {t('initWorkspaceBtn')}
             </Button>

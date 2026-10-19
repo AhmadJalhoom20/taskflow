@@ -37,5 +37,6 @@ server/
 .idea/
 .agents/
 .impeccable/
+.taste-skill/
 tsconfig.tsbuildinfo
 scratch/

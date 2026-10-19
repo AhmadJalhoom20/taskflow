@@ -22,7 +22,7 @@ export default function AppLoader({
   return (
     <div className={`inline-flex items-center justify-center gap-2.5 text-slate-500 dark:text-slate-400 ${className}`} role="status">
       <div
-        className={`${dimensions} rounded-full border-slate-300 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 animate-spin`}
+        className={`${dimensions} rounded-full border-slate-300 dark:border-slate-700 border-t-amber-500 dark:border-t-amber-400 animate-spin`}
         aria-hidden="true"
       />
       {tip ? (

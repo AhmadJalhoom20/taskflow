@@ -225,7 +225,7 @@ export default function ProjectSettingsPage() {
           </Button>
         </Link>
         <div className="flex items-center gap-2.5">
-          <SettingOutlined className="text-2xl text-blue-600" />
+          <SettingOutlined className="text-2xl text-amber-500" />
           <div>
             <Title level={2} className="!mb-0 !text-2xl !font-bold">
               {t('projectSettingsTitle')}
@@ -241,7 +241,7 @@ export default function ProjectSettingsPage() {
       <Card
         title={<span className="font-bold text-slate-900 dark:text-slate-100">{t('generalInformation')}</span>}
         variant="outlined"
-        className="border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none"
+        className="border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none"
       >
         <Form form={projectForm} layout="vertical" onFinish={handleUpdateGeneral} requiredMark="optional">
           <Form.Item
@@ -265,7 +265,7 @@ export default function ProjectSettingsPage() {
           </Form.Item>
 
           <div className="flex justify-end">
-            <Button type="primary" htmlType="submit" loading={isUpdating} className="!bg-blue-600 !border-blue-600 text-white">
+            <Button type="primary" htmlType="submit" loading={isUpdating} className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold px-6 shadow-sm shadow-amber-500/20">
               {t('saveProjectSettings')}
             </Button>
           </div>
@@ -276,12 +276,12 @@ export default function ProjectSettingsPage() {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <TeamOutlined className="text-blue-600 dark:text-blue-400" />
+            <TeamOutlined className="text-amber-500" />
             <span className="font-bold text-slate-900 dark:text-slate-100">{t('teamMembersSection')} ({project.memberIds.length})</span>
           </div>
         }
         variant="outlined"
-        className="border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none"
+        className="border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none"
       >
         <Paragraph className="text-xs text-slate-500 !mb-4">
           {t('addMemberDesc')}
@@ -303,7 +303,7 @@ export default function ProjectSettingsPage() {
             />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<UserAddOutlined />} loading={isAddingMember} className="!bg-blue-600 !border-blue-600 text-white">
+            <Button type="primary" htmlType="submit" icon={<UserAddOutlined />} loading={isAddingMember} className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold shadow-sm shadow-amber-500/20">
               {t('addMemberBtn')}
             </Button>
           </Form.Item>

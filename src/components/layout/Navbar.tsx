@@ -176,15 +176,15 @@ export default function Navbar() {
 
   const badgeColor = backendStatus.connected
     ? isLocalActive
-      ? 'border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20'
+      ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
       : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
     : 'border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20';
 
   const dotColor = backendStatus.connected
     ? isLocalActive
-      ? 'bg-blue-600 dark:bg-blue-400'
-      : 'bg-emerald-600 dark:bg-emerald-400'
-    : 'bg-rose-600 dark:bg-rose-400';
+      ? 'bg-cyan-500'
+      : 'bg-emerald-500'
+    : 'bg-rose-500';
 
   const backendPopoverContent = (
     <div className="w-80 space-y-3 text-xs py-1">
@@ -228,7 +228,7 @@ export default function Navbar() {
             {language === 'ar' ? 'محرك قاعدة البيانات:' : 'Database Engine:'}
           </span>
           <span className="inline-flex items-center gap-1 font-medium text-slate-700 dark:text-slate-300">
-            <DatabaseOutlined className="text-xs text-blue-500" />
+            <DatabaseOutlined className="text-xs text-amber-500" />
             <span>SQLite WAL Engine</span>
           </span>
         </div>
@@ -237,7 +237,7 @@ export default function Navbar() {
             {language === 'ar' ? 'الرابط النشط حالياً:' : 'Active Endpoint:'}
           </span>
           <span
-            className="font-mono text-[10px] text-blue-600 dark:text-blue-400 truncate max-w-[170px]"
+            className="font-mono text-[10px] text-amber-600 dark:text-amber-400 truncate max-w-[170px]"
             title={backendStatus.backendUrl}
           >
             {backendStatus.backendUrl}
@@ -281,7 +281,7 @@ export default function Navbar() {
       placement="bottomRight"
       title={
         <div className="flex items-center gap-2 font-semibold text-xs pb-1 border-b border-slate-100 dark:border-[#1e2430]">
-          <DatabaseOutlined className="text-blue-600" />
+          <DatabaseOutlined className="text-amber-500" />
           <span>
             {language === 'ar' ? 'إدارة الاتصال بالخادم' : 'Backend Connection'}
           </span>
@@ -302,7 +302,7 @@ export default function Navbar() {
 
   if (!user) {
     return (
-      <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-xl transition-colors relative">
+      <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080b11]/90 backdrop-blur-xl transition-colors relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-14">
             <Link href="/" className="flex items-center hover:opacity-90 transition-opacity">
@@ -324,7 +324,7 @@ export default function Navbar() {
                 <Link href="/login">
                   <Button
                     size="small"
-                    className="border-slate-200 dark:border-[#1f293d] text-slate-700 dark:text-slate-200 font-medium text-xs bg-slate-50 hover:bg-slate-100 dark:bg-[#111827] dark:hover:bg-[#162032] rounded-lg"
+                    className="border-slate-200 dark:border-[#1b2336] text-slate-700 dark:text-slate-200 font-medium text-xs bg-slate-50 hover:bg-slate-100 dark:bg-[#0e131f] dark:hover:bg-[#161d2e] rounded-lg"
                   >
                     {t('signIn')}
                   </Button>
@@ -335,7 +335,7 @@ export default function Navbar() {
                   <Button
                     type="primary"
                     size="small"
-                    className="!bg-blue-600 hover:!bg-blue-700 !border-0 font-medium text-xs text-white shadow-xs rounded-lg"
+                    className="!bg-amber-500 hover:!bg-amber-400 !border-0 font-semibold text-xs !text-slate-950 shadow-xs rounded-lg"
                   >
                     {t('getStarted')}
                   </Button>
@@ -375,7 +375,7 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-[#0b0f19]/80 backdrop-blur-xl transition-colors relative">
+    <header className="sticky top-0 z-50 border-b border-slate-200/80 dark:border-white/[0.08] bg-white/90 dark:bg-[#080b11]/90 backdrop-blur-xl transition-colors relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-14">
           {/* Left: Brand & Clean Contextual Breadcrumb */}
@@ -388,7 +388,7 @@ export default function Navbar() {
               href="/dashboard"
               className={`text-xs transition-all ${
                 pathname === '/dashboard'
-                  ? 'px-2.5 py-1 rounded-md font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 shadow-xs'
+                  ? 'px-2.5 py-1 rounded-md font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20 shadow-xs'
                   : 'px-2 py-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium'
               }`}
             >
@@ -397,7 +397,7 @@ export default function Navbar() {
             {pathname === '/projects/new' && (
               <>
                 <span className="text-slate-300 dark:text-slate-700 text-xs font-light">/</span>
-                <span className="px-2.5 py-1 rounded-md font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 shadow-xs text-xs">
+                <span className="px-2.5 py-1 rounded-md font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20 shadow-xs text-xs">
                   {t('newProject')}
                 </span>
               </>
@@ -405,7 +405,7 @@ export default function Navbar() {
             {pathname?.startsWith('/projects/') && pathname !== '/projects/new' && (
               <>
                 <span className="text-slate-300 dark:text-slate-700 text-xs font-light">/</span>
-                <span className="px-2.5 py-1 rounded-md font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 border border-blue-200/60 dark:border-blue-800/40 shadow-xs text-xs">
+                <span className="px-2.5 py-1 rounded-md font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20 shadow-xs text-xs">
                   {pathname.includes('/settings') ? t('projectSettingsTitle') : t('kanbanBoard')}
                 </span>
               </>
@@ -417,14 +417,14 @@ export default function Navbar() {
             {/* Compact Command Palette Trigger */}
             <button
               onClick={() => setCommandOpen(true)}
-              className="hidden sm:flex items-center justify-between gap-2 px-2.5 py-1 text-xs text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-50 hover:bg-slate-100 dark:bg-[#111827] dark:hover:bg-[#162032] border border-slate-200 dark:border-[#1f293d] rounded-lg transition-all w-36 sm:w-44 cursor-pointer shadow-xs hover:border-blue-400/40 dark:hover:border-blue-500/40"
+              className="hidden sm:flex items-center justify-between gap-2 px-2.5 py-1 text-xs text-slate-400 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-50 hover:bg-slate-100 dark:bg-[#0e131f] dark:hover:bg-[#161d2e] border border-slate-200 dark:border-[#1b2336] rounded-lg transition-all w-36 sm:w-44 cursor-pointer shadow-xs hover:border-amber-400/40 dark:hover:border-amber-500/40"
               aria-label="Open command palette"
             >
               <span className="flex items-center gap-1.5 truncate">
-                <SearchOutlined className="text-[11px] text-blue-500" />
+                <SearchOutlined className="text-[11px] text-amber-500" />
                 <span className="truncate">{t('searchPlaceholder')}</span>
               </span>
-              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-[#162032] text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-[#1f293d] shrink-0 font-medium">
+              <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white dark:bg-[#161d2e] text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-[#1b2336] shrink-0 font-medium">
                 Cmd+K
               </kbd>
             </button>

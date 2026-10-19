@@ -60,10 +60,10 @@ export function KanbanCard({
       onDragEnd={onDragEnd}
       onClick={() => onInspect(task.id)}
       onKeyDown={handleKeyDown}
-      className={`group bg-white dark:bg-[#111827] border rounded-lg p-3 space-y-2.5 cursor-pointer transition-all duration-150 ease-out active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none ${
+      className={`group bg-white dark:bg-[#0e131f] border rounded-lg p-3 space-y-2.5 cursor-pointer transition-all duration-150 ease-out active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none ${
         isDragging
-          ? 'opacity-30 scale-95 border-dashed border-blue-600 shadow-none'
-          : 'border-slate-200 dark:border-[#1e2430] hover:border-slate-300 dark:hover:border-slate-700 shadow-xs hover:shadow-sm'
+          ? 'opacity-30 scale-95 border-dashed border-amber-500 shadow-none'
+          : 'border-slate-200 dark:border-[#1b2336] hover:border-slate-300 dark:hover:border-slate-700 shadow-xs hover:shadow-sm'
       } ${task.status === 'done' ? 'opacity-85' : ''}`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -138,7 +138,7 @@ export function KanbanCard({
               <div className="flex items-center gap-1.5">
                 <Avatar
                   size={20}
-                  className="bg-blue-600 text-[10px] border border-white dark:border-[#111827] shadow-xs"
+                  className="bg-amber-500 text-slate-950 font-bold text-[10px] border border-white dark:border-[#0e131f] shadow-xs"
                 >
                   {task.assigneeName.charAt(0).toUpperCase()}
                 </Avatar>

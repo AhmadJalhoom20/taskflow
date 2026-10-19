@@ -49,14 +49,15 @@ export default function Logo({
             width="28"
             height="28"
             rx="7"
-            className="fill-slate-900 dark:fill-blue-600"
+            className="fill-slate-950 dark:fill-[#141a29] stroke-slate-800 dark:stroke-white/15"
+            strokeWidth="1"
           />
           {/* Crisp geometric task layers */}
-          <rect x="8" y="8" width="16" height="3" rx="1.5" fill="#ffffff" />
-          <rect x="8" y="14.5" width="11" height="3" rx="1.5" fill="#ffffff" fillOpacity="0.85" />
-          <rect x="8" y="21" width="7" height="3" rx="1.5" fill="#ffffff" fillOpacity="0.65" />
-          {/* Leading directional mark */}
-          <circle cx="21.5" cy="19.5" r="2.5" fill="#38bdf8" />
+          <rect x="7.5" y="8" width="17" height="2.5" rx="1.25" fill="#f8fafc" />
+          <rect x="7.5" y="14" width="12" height="2.5" rx="1.25" fill="#f8fafc" fillOpacity="0.8" />
+          <rect x="7.5" y="20" width="8" height="2.5" rx="1.25" fill="#f8fafc" fillOpacity="0.55" />
+          {/* High-Voltage Precision Amber Leading Mark */}
+          <circle cx="21" cy="20" r="2.75" fill="#f59e0b" />
         </svg>
       </div>
 
@@ -64,11 +65,11 @@ export default function Logo({
         <div className="flex flex-col leading-tight">
           <div className="flex items-center">
             <span className={`font-black tracking-tight text-slate-950 dark:text-white ${dimensions.text} font-sans`}>
-              Task<span className="text-blue-600 dark:text-blue-400 font-black">Flow</span>
+              Task<span className="text-amber-500 font-black">Flow</span>
             </span>
           </div>
           <span className={`uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold font-mono ${dimensions.badge}`}>
-            {isArabic ? 'طاقات المؤسسية' : 'TAQAT Enterprise'}
+            {isArabic ? 'منظومة إدارة المهام' : 'ENGINEERING RUNTIME'}
           </span>
         </div>
       )}

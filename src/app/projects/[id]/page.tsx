@@ -459,7 +459,7 @@ export default function ProjectDetailsPage() {
         }
         return (
           <Space orientation="horizontal" size={6}>
-            <Avatar size="small" icon={<UserOutlined />} className="bg-blue-500">
+            <Avatar size="small" icon={<UserOutlined />} className="bg-amber-500 text-slate-950 font-bold">
               {record.assigneeName.charAt(0).toUpperCase()}
             </Avatar>
             <span className="text-xs font-medium truncate max-w-[100px]">{record.assigneeName}</span>
@@ -600,7 +600,7 @@ export default function ProjectDetailsPage() {
                   <Tag
                     key={mId}
                     onClick={() => setIsTeamModalOpen(true)}
-                    className="text-[11px] border-slate-200 dark:border-[#1e2430] bg-slate-50 dark:bg-[#171c26] text-slate-600 dark:text-slate-300 cursor-pointer hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    className="text-[11px] border-slate-200 dark:border-[#1b2336] bg-slate-50 dark:bg-[#141a29] text-slate-600 dark:text-slate-300 cursor-pointer hover:border-amber-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
                     title={t('teamRoster')}
                   >
                     {isProjectOwner && <CrownOutlined className="text-amber-500 me-1" />}
@@ -612,7 +612,7 @@ export default function ProjectDetailsPage() {
                 <button
                   type="button"
                   onClick={() => setIsTeamModalOpen(true)}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 cursor-pointer transition-colors"
+                  className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/25 cursor-pointer transition-colors"
                 >
                   +{project.memberIds.length - 5} {t('membersCount')}
                 </button>
@@ -621,16 +621,16 @@ export default function ProjectDetailsPage() {
           </div>
 
           {/* Right Header Actions & Velocity Progress */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-s lg:border-slate-100 lg:dark:border-[#1e2430] lg:ps-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-s lg:border-slate-100 lg:dark:border-[#1b2336] lg:ps-6">
             <div className="w-full sm:w-44 space-y-1">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-500 dark:text-slate-400 font-medium">{t('sprintVelocity')}</span>
-                <span className="font-bold text-blue-600 dark:text-blue-400 tnum">{completionPercent}%</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400 tnum">{completionPercent}%</span>
               </div>
               <Progress
                 percent={completionPercent}
                 showInfo={false}
-                strokeColor="#2563eb"
+                strokeColor="#f59e0b"
                 railColor="rgba(100, 116, 139, 0.2)"
                 size={['100%', 6]}
               />
@@ -642,12 +642,12 @@ export default function ProjectDetailsPage() {
             <div className="flex items-center gap-2">
               {isOwner && (
                 <Link href={`/projects/${project.id}/settings`}>
-                  <Button icon={<SettingOutlined />} size="middle" className="border-slate-200 dark:border-[#1e2430]">
+                  <Button icon={<SettingOutlined />} size="middle" className="border-slate-200 dark:border-[#1b2336]">
                     {t('settings')}
                   </Button>
                 </Link>
               )}
-              <Button type="primary" icon={<PlusOutlined />} size="middle" onClick={() => openCreateTaskModal('todo')} className="!bg-blue-600 !border-blue-600">
+              <Button type="primary" icon={<PlusOutlined />} size="middle" onClick={() => openCreateTaskModal('todo')} className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold shadow-sm shadow-amber-500/20">
                 {t('addTask')}
               </Button>
             </div>
@@ -740,8 +740,8 @@ export default function ProjectDetailsPage() {
               type={myTasksOnly ? 'primary' : 'default'}
               icon={<UserOutlined />}
               onClick={() => setMyTasksOnly(!myTasksOnly)}
-              className={`flex items-center gap-1.5 font-medium text-xs border-slate-200 dark:border-[#1e2430] ${
-                myTasksOnly ? '!bg-blue-600 !border-blue-600 text-white' : ''
+              className={`flex items-center gap-1.5 font-medium text-xs border-slate-200 dark:border-[#1b2336] ${
+                myTasksOnly ? '!bg-amber-500 !border-amber-500 !text-slate-950 font-bold' : ''
               }`}
             >
               {t('myTasksFilter')}
@@ -812,7 +812,7 @@ export default function ProjectDetailsPage() {
                   setMyTasksOnly(false);
                   setSortBy('default');
                 }}
-                className="!text-blue-600 dark:!text-blue-400"
+                className="!text-amber-600 dark:!text-amber-400 font-semibold"
               >
                 {t('resetFilters')}
               </Button>
@@ -928,17 +928,17 @@ export default function ProjectDetailsPage() {
                   mobileKanbanCol === 'todo' ? 'block' : 'hidden md:block'
                 } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'todo'
-                    ? 'border-blue-600 bg-blue-500/10 ring-2 ring-blue-500/20 shadow-md'
-                    : 'border-slate-200/90 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
+                    ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20 shadow-md'
+                    : 'border-slate-200/90 dark:border-white/[0.08] bg-slate-50/90 dark:bg-[#0e131f]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
                 }`}
               >
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1f293d]">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1b2336]">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-slate-400" />
                     <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 font-sans">
                       {t('statusTodo')}
                     </span>
-                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-[#162032] text-slate-700 dark:text-slate-300 tnum">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-[#161d2e] text-slate-700 dark:text-slate-300 tnum">
                       {filteredTasks.filter((t) => t.status === 'todo').length}
                     </span>
                   </div>
@@ -947,7 +947,7 @@ export default function ProjectDetailsPage() {
                     size="small"
                     icon={<PlusOutlined />}
                     onClick={() => openCreateTaskModal('todo')}
-                    className="text-xs text-slate-400 hover:text-blue-600 rounded-lg"
+                    className="text-xs text-slate-400 hover:text-amber-600 rounded-lg"
                   />
                 </div>
 
@@ -956,8 +956,8 @@ export default function ProjectDetailsPage() {
                     <div
                       className={`text-center py-10 text-xs italic rounded-xl border border-dashed transition-colors ${
                         dragOverCol === 'todo'
-                          ? 'border-blue-600 text-blue-600 bg-blue-50/5 font-semibold'
-                          : 'border-slate-200 dark:border-[#1f293d] text-slate-400'
+                          ? 'border-amber-500 text-amber-600 bg-amber-50/5 font-semibold'
+                          : 'border-slate-200 dark:border-[#1b2336] text-slate-400'
                       }`}
                     >
                       {dragOverCol === 'todo' ? `${t('dropHereToMove')} ${t('statusTodo')}` : t('noTasksInQueue')}
@@ -990,11 +990,11 @@ export default function ProjectDetailsPage() {
                   mobileKanbanCol === 'in_progress' ? 'block' : 'hidden md:block'
                 } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'in_progress'
-                    ? 'border-blue-600 bg-blue-500/10 ring-2 ring-blue-500/20 shadow-md'
-                    : 'border-slate-200/90 dark:border-white/[0.08] bg-amber-500/[0.02] dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
+                    ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20 shadow-md'
+                    : 'border-slate-200/90 dark:border-white/[0.08] bg-amber-500/[0.02] dark:bg-[#0e131f]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
                 }`}
               >
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1f293d]">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1b2336]">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-500" />
                     <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 font-sans">
@@ -1019,8 +1019,8 @@ export default function ProjectDetailsPage() {
                     <div
                       className={`text-center py-10 text-xs italic rounded-xl border border-dashed transition-colors ${
                         dragOverCol === 'in_progress'
-                          ? 'border-blue-600 text-blue-600 bg-blue-50/5 font-semibold'
-                          : 'border-slate-200 dark:border-[#1f293d] text-slate-400'
+                          ? 'border-amber-500 text-amber-600 bg-amber-50/5 font-semibold'
+                          : 'border-slate-200 dark:border-[#1b2336] text-slate-400'
                       }`}
                     >
                       {dragOverCol === 'in_progress' ? `${t('dropHereToMove')} ${t('statusInProgress')}` : t('noTasksInProgress')}
@@ -1054,10 +1054,10 @@ export default function ProjectDetailsPage() {
                 } rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative overflow-hidden ${
                   dragOverCol === 'done'
                     ? 'border-emerald-500 bg-emerald-500/10 ring-2 ring-emerald-500/20 shadow-md'
-                    : 'border-slate-200/90 dark:border-white/[0.08] bg-emerald-500/[0.02] dark:bg-[#0b0f19]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
+                    : 'border-slate-200/90 dark:border-white/[0.08] bg-emerald-500/[0.02] dark:bg-[#0e131f]/90 shadow-card-elevation dark:shadow-card-elevation-dark'
                 }`}
               >
-                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1f293d]">
+                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-[#1b2336]">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 font-sans">
@@ -1083,7 +1083,7 @@ export default function ProjectDetailsPage() {
                       className={`text-center py-10 text-xs italic rounded-xl border border-dashed transition-colors ${
                         dragOverCol === 'done'
                           ? 'border-emerald-500 text-emerald-600 bg-emerald-50/5 font-semibold'
-                          : 'border-slate-200 dark:border-[#1f293d] text-slate-400'
+                          : 'border-slate-200 dark:border-[#1b2336] text-slate-400'
                       }`}
                     >
                       {dragOverCol === 'done' ? `${t('dropHereToMove')} ${t('statusDone')}` : t('noTasksCompleted')}
@@ -1097,7 +1097,7 @@ export default function ProjectDetailsPage() {
           </div>
         ) : (
           /* Tasks Table */
-          <Card variant="outlined" className="border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none">
+          <Card variant="outlined" className="border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none">
             <Table
               dataSource={filteredTasks}
               columns={columns}
@@ -1106,7 +1106,7 @@ export default function ProjectDetailsPage() {
               locale={{ emptyText: 'No tasks matching the selected filters.' }}
               onRow={(record) => ({
                 onClick: () => setInspectingTaskId(record.id),
-                className: 'cursor-pointer hover:bg-slate-50 dark:hover:bg-[#161b26] transition-colors',
+                className: 'cursor-pointer hover:bg-slate-50 dark:hover:bg-[#161d2e] transition-colors',
               })}
             />
           </Card>
@@ -1137,8 +1137,8 @@ export default function ProjectDetailsPage() {
       {/* Task Creation & Edit Modal - Linear Grade Precision */}
       <Modal
         title={
-          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-[#1e2430]">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+          <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-[#1b2336]">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             <div className="min-w-0">
               <div className="text-xs font-mono text-slate-400">
                 {project.name} &bull; {editingTask ? `TASK-${editingTask.id.slice(0, 6)}` : t('createTaskTitle')}
@@ -1277,7 +1277,7 @@ export default function ProjectDetailsPage() {
                 type="primary"
                 htmlType="submit"
                 loading={taskSubmitting}
-                className="!bg-blue-600 hover:!bg-blue-500 !border-blue-600 font-medium px-5 rounded-lg text-white shadow-none"
+                className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 font-bold px-6 rounded-lg !text-slate-950 shadow-sm shadow-amber-500/20"
               >
                 {editingTask ? t('saveChanges') : t('createTaskBtn')}
               </Button>

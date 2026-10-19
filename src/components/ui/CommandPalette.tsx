@@ -213,12 +213,12 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     >
       <div
         className={`flex flex-col max-h-[480px] rounded-xl overflow-hidden ${
-          themeMode === 'dark' ? 'bg-[#12161f] text-slate-100' : 'bg-white text-slate-900'
+          themeMode === 'dark' ? 'bg-[#0e131f] text-slate-100 border border-[#1b2336]' : 'bg-white text-slate-900'
         }`}
       >
         {/* Search Input Bar */}
-        <div className="p-3.5 border-b border-slate-200 dark:border-[#1e2430] flex items-center gap-3">
-          <SearchOutlined className="text-slate-400 text-base" />
+        <div className="p-3.5 border-b border-slate-200 dark:border-[#1b2336] flex items-center gap-3">
+          <SearchOutlined className="text-amber-500 text-base" />
           <input
             ref={inputRef}
             type="text"
@@ -229,13 +229,13 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
             className="flex-1 bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
             autoFocus
           />
-          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#1a202c] border border-slate-200 dark:border-[#1e2430] text-slate-500 dark:text-slate-400">
+          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#161d2e] border border-slate-200 dark:border-[#1b2336] text-slate-500 dark:text-slate-400">
             ESC
           </span>
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto p-2 divide-y divide-slate-100/50 dark:divide-[#1e2430]/40 max-h-[380px]">
+        <div className="overflow-y-auto p-2 divide-y divide-slate-100/50 dark:divide-[#1b2336]/40 max-h-[380px]">
           {filteredItems.length === 0 ? (
             <div className="py-12 text-center text-xs text-slate-400">
               No matching commands or projects found.
@@ -250,16 +250,16 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
                     isSelected
-                      ? 'bg-blue-600/10 text-blue-600 dark:text-blue-400'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-[#171c26]'
+                      ? 'bg-amber-500/15 text-amber-800 dark:text-amber-400'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-[#161d2e]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span
                       className={`text-sm flex items-center justify-center w-7 h-7 rounded-md ${
                         isSelected
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-100 dark:bg-[#1a202c] text-slate-500 dark:text-slate-400'
+                          ? 'bg-amber-500 text-slate-950 font-bold'
+                          : 'bg-slate-100 dark:bg-[#161d2e] text-slate-500 dark:text-slate-400'
                       }`}
                     >
                       {item.icon}
@@ -281,7 +281,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
                       {item.category}
                     </span>
                     {isSelected && (
-                      <span className="text-xs text-blue-600 dark:text-blue-400">
+                      <span className="text-xs text-amber-600 dark:text-amber-400">
                         <EnterOutlined />
                       </span>
                     )}

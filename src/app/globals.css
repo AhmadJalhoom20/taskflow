@@ -3,32 +3,34 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f7f8fa;
+  --foreground: #090d16;
   --surface: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
-  --border-subtle: #edf2f7;
-  --accent: #2563eb;
+  --surface-muted: #f0f3f8;
+  --border: #e2e6ee;
+  --border-subtle: #edf0f6;
+  --accent: #d97706;
+  --accent-hover: #b45309;
   
   /* WCAG AA Calibrated Text Tokens */
-  --text-primary: #0f172a;
+  --text-primary: #090d16;
   --text-secondary: #475569;  /* 4.58:1 contrast on white */
   --text-tertiary: #64748b;   /* 4.5:1 on light gray */
 }
 
 html.dark {
-  --background: #0b0f19;
+  --background: #080b11;
   --foreground: #f8fafc;
-  --surface: #111827;
-  --surface-muted: #162032;
-  --border: #1f293d;
-  --border-subtle: #192233;
-  --accent: #3b82f6;
+  --surface: #0e131f;
+  --surface-muted: #141a29;
+  --border: #1b2336;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --accent: #f59e0b;
+  --accent-hover: #fbbf24;
 
   /* WCAG AA Calibrated Dark Tokens */
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;  /* 5.5:1 contrast on #111827 */
+  --text-secondary: #94a3b8;  /* 5.5:1 contrast on #0e131f */
   --text-tertiary: #cbd5e1;
 }
 
@@ -76,13 +78,13 @@ html[dir='rtl'] .ant-input-affix-wrapper .ant-input {
 }
 
 ::selection {
-  background-color: #2563eb;
-  color: #ffffff;
+  background-color: #f59e0b;
+  color: #080b11;
 }
 
 html.dark ::selection {
-  background-color: #3b82f6;
-  color: #ffffff;
+  background-color: #f59e0b;
+  color: #080b11;
 }
 
 /* Tabular figures for dense metrics and task counts */
@@ -90,9 +92,9 @@ html.dark ::selection {
   font-variant-numeric: tabular-nums;
 }
 
-/* Precision WCAG Focus Ring (No blurry halos) */
+/* Precision WCAG Focus Ring (Tactile Amber) */
 *:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #f59e0b;
   outline-offset: 1px;
 }
 

@@ -113,7 +113,7 @@ export default function DashboardPage() {
 
         <div className="flex items-center gap-2">
           <Link href="/projects/new">
-            <Button type="primary" icon={<PlusOutlined />} size="middle" className="!bg-blue-600 !border-blue-600">
+            <Button type="primary" icon={<PlusOutlined />} size="middle" className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 font-bold !text-slate-950 shadow-sm shadow-amber-500/20">
               {t('newProject')}
             </Button>
           </Link>
@@ -124,7 +124,7 @@ export default function DashboardPage() {
       {projects.length === 0 ? (
         <div className="space-y-6">
           {/* Welcome Hero Canvas */}
-          <div className="relative rounded-2xl border border-slate-200 dark:border-[#1e2430] bg-gradient-to-b from-slate-50 to-white dark:from-[#111622] dark:to-[#0d1017] p-6 sm:p-8 overflow-hidden">
+          <div className="relative rounded-2xl border border-slate-200 dark:border-[#1b2336] bg-gradient-to-b from-slate-50 to-white dark:from-[#141a29] dark:to-[#080b11] p-6 sm:p-8 overflow-hidden">
             <div className="max-w-2xl space-y-3">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
                 {t('welcomeTitle')}, {user?.displayName || 'Engineer'}
@@ -141,7 +141,7 @@ export default function DashboardPage() {
               <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 {t('selectStarterTemplate')}
               </span>
-              <Link href="/projects/new" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
+              <Link href="/projects/new" className="text-xs text-amber-600 dark:text-amber-400 hover:underline">
                 {t('orBuildFromScratch')} &rarr;
               </Link>
             </div>
@@ -150,14 +150,14 @@ export default function DashboardPage() {
               {/* Template 1: Engineering Sprint */}
               <Card
                 variant="outlined"
-                className="taskflow-card-hover border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none flex flex-col justify-between"
+                className="taskflow-card-hover border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
                       <AppstoreOutlined className="text-lg" />
                     </div>
-                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-blue-200 dark:border-blue-900/60 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300">
+                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300">
                       {isArabic ? 'موصى به' : 'Recommended'}
                     </span>
                   </div>
@@ -171,23 +171,23 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1.5 pt-2 text-[11px] text-slate-600 dark:text-slate-300">
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                       <span>{t('sprintFeat1')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                       <span>{t('sprintFeat2')}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                       <span>{t('sprintFeat3')}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-[#1e2430]">
+                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-[#1b2336]">
                   <Link href="/projects/new?template=sprint">
-                    <Button type="primary" block className="!bg-blue-600 !border-blue-600 font-medium">
+                    <Button type="primary" block className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold">
                       {t('useSprintTemplate')}
                     </Button>
                   </Link>
@@ -333,11 +333,11 @@ export default function DashboardPage() {
                         {metrics.totalProjects}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="w-2 h-2 rounded-full bg-cyan-500" />
                         <span>{t('accessibleWorkspaces')}</span>
                       </div>
                     </div>
-                    <div className="w-11 h-11 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-base shadow-xs">
+                    <div className="w-11 h-11 rounded-xl bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center text-cyan-600 dark:text-cyan-400 text-base shadow-xs">
                       <FolderOutlined />
                     </div>
                   </div>
@@ -470,12 +470,12 @@ export default function DashboardPage() {
                 <div className="w-full md:w-64 space-y-1">
                   <div className="flex justify-between text-xs font-semibold tnum">
                     <span className="text-slate-500">{t('progress')}</span>
-                    <span className="text-blue-600 dark:text-blue-400">{completionRate}%</span>
+                    <span className="text-amber-600 dark:text-amber-400 font-bold">{completionRate}%</span>
                   </div>
                   <Progress
                     percent={completionRate}
                     showInfo={false}
-                    strokeColor="#2563eb"
+                    strokeColor="#f59e0b"
                     railColor="rgba(100, 116, 139, 0.2)"
                     size={['100%', 6]}
                   />
@@ -565,7 +565,7 @@ export default function DashboardPage() {
                               e.stopPropagation();
                               setSelectedTeamProject(proj);
                             }}
-                            className="text-xs text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1 font-mono tnum cursor-pointer transition-colors"
+                            className="text-xs text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1 font-mono tnum cursor-pointer transition-colors"
                             title={t('teamRoster')}
                           >
                             <TeamOutlined /> {proj.memberIds.length}
@@ -597,7 +597,7 @@ export default function DashboardPage() {
                                 <Tooltip key={mId} title={`${name} (${isProjectOwner ? t('owner') : t('member')})`}>
                                   <Avatar
                                     size={22}
-                                    className={`text-[10px] border-2 border-white dark:border-[#111827] font-semibold ${
+                                    className={`text-[10px] border-2 border-white dark:border-[#0e131f] font-semibold ${
                                       isProjectOwner ? 'bg-amber-600 text-white' : 'bg-slate-700 text-white'
                                     }`}
                                   >
@@ -607,17 +607,17 @@ export default function DashboardPage() {
                               );
                             })}
                             {proj.memberIds.length > 5 && (
-                              <span className="text-[10px] ms-1.5 px-1.5 py-0.2 rounded font-mono font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 group-hover/roster:bg-blue-500/20 border border-blue-500/20 tnum transition-colors">
+                              <span className="text-[10px] ms-1.5 px-1.5 py-0.2 rounded font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 group-hover/roster:bg-amber-500/20 border border-amber-500/25 tnum transition-colors">
                                 +{proj.memberIds.length - 5}
                               </span>
                             )}
                           </div>
-                          <span className="text-[11px] text-slate-400 group-hover/roster:text-blue-600 dark:group-hover/roster:text-blue-400 font-mono tnum transition-colors">
+                          <span className="text-[11px] text-slate-400 group-hover/roster:text-amber-600 dark:group-hover/roster:text-amber-400 font-mono tnum transition-colors">
                             {proj.memberIds.length} {proj.memberIds.length === 1 ? t('memberSingular') : t('membersCount')}
                           </span>
                         </div>
 
-                        <div className="pt-3 border-t border-slate-100 dark:border-[#1e2430] flex items-center justify-between text-xs">
+                        <div className="pt-3 border-t border-slate-100 dark:border-[#1b2336] flex items-center justify-between text-xs">
                           <span className="text-slate-400 text-[11px] tnum">
                             {t('updated')} {formatDateLocalized(proj.updatedAt)}
                           </span>
@@ -627,7 +627,7 @@ export default function DashboardPage() {
                               size="small"
                               iconPlacement="end"
                               icon={isRTL ? <ArrowLeftOutlined /> : <ArrowRightOutlined />}
-                              className="!text-blue-600 dark:!text-blue-400 font-medium !px-0 hover:underline"
+                              className="!text-amber-600 dark:!text-amber-400 font-bold !px-0 hover:underline"
                             >
                               {t('openKanban')}
                             </Button>

@@ -144,18 +144,18 @@ export default function LoginPage() {
                 loading={loading}
                 iconPlacement="end"
                 icon={<ArrowRightOutlined className="rtl:-scale-x-100" />}
-                className="font-semibold text-white h-11 rounded-lg text-sm shadow-none !bg-blue-600 hover:!bg-blue-500 !border-blue-600"
+                className="font-bold !text-slate-950 h-11 rounded-lg text-sm shadow-md shadow-amber-500/20 !bg-amber-500 hover:!bg-amber-400 !border-amber-500"
               >
                 {t('signIn')}
               </Button>
             </Form.Item>
           </Form>
 
-          <div className="text-center text-xs text-slate-600 dark:text-slate-400 pt-4 border-t border-slate-100 dark:border-[#1e2430]">
+          <div className="text-center text-xs text-slate-600 dark:text-slate-400 pt-4 border-t border-slate-100 dark:border-[#1b2336]">
             {language === 'ar' ? 'ليس لديك حساب مؤسسي؟ ' : "Don't have an enterprise account? "}
             <Link
               href="/register"
-              className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+              className="text-amber-600 dark:text-amber-400 font-semibold hover:underline"
             >
               {language === 'ar' ? 'تسجيل مؤسسة جديدة' : 'Register your organization'}
             </Link>
