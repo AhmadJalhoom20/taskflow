@@ -175,9 +175,7 @@ export default function Navbar() {
     : 'Offline';
 
   const badgeColor = backendStatus.connected
-    ? isLocalActive
-      ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/20'
-      : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
+    ? 'border-slate-200 dark:border-white/10 bg-slate-50 hover:bg-slate-100 dark:bg-[#141a29] dark:hover:bg-[#1a2336] text-slate-700 dark:text-slate-300'
     : 'border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20';
 
   const dotColor = backendStatus.connected
@@ -324,7 +322,7 @@ export default function Navbar() {
                 <Link href="/login">
                   <Button
                     size="small"
-                    className="border-slate-200 dark:border-[#1b2336] text-slate-700 dark:text-slate-200 font-medium text-xs bg-slate-50 hover:bg-slate-100 dark:bg-[#0e131f] dark:hover:bg-[#161d2e] rounded-lg"
+                    className="border-slate-200 dark:border-[#1b2336] text-slate-700 dark:text-slate-200 font-medium text-xs bg-slate-50 hover:bg-slate-100 dark:bg-[#0e131f] dark:hover:bg-[#161d2e] rounded-lg active:scale-[0.98] transition-transform duration-160"
                   >
                     {t('signIn')}
                   </Button>
@@ -335,7 +333,7 @@ export default function Navbar() {
                   <Button
                     type="primary"
                     size="small"
-                    className="!bg-amber-500 hover:!bg-amber-400 !border-0 font-semibold text-xs !text-slate-950 shadow-xs rounded-lg"
+                    className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 font-bold text-xs !text-slate-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] shadow-xs rounded-lg active:scale-[0.98] transition-transform duration-160"
                   >
                     {t('getStarted')}
                   </Button>
