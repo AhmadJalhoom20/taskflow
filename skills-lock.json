@@ -42,6 +42,12 @@
       "sourceType": "github",
       "skillPath": "skills/webapp-testing/SKILL.md",
       "computedHash": "ad5b1fc52807e9afa4635e59218a026b164dc58b6c3f41b0f7c644dcd6ccf572"
+    },
+    "yousefnaim-protofolio": {
+      "source": "yousefnaim/yousefnaim-protofolio",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "376f1dd65640dec41fe40e68fbfa2f6847d01e18761372e8b84cf1f0ca53d13d"
     }
   }
 }
