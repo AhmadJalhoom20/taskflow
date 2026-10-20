@@ -129,37 +129,40 @@ function KpiMetricCard({
     : 'border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211]';
 
   return (
-    <Tooltip title={tooltipText}>
+    <Tooltip title={tooltipText} className="w-full h-full block">
       <Card
         variant="outlined"
-        className={`tactile-card shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all !p-0 cursor-default ${cardBorderClass}`}
+        className={`tactile-card shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all !p-0 cursor-default h-full w-full flex flex-col justify-between ${cardBorderClass}`}
       >
-        <div className="p-4 sm:p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <span
-                className={`text-xs sm:text-sm uppercase tracking-wider font-semibold ${
-                  isOverdueAttention
-                    ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
-                    : 'text-[#736B5E] dark:text-[#9A9183]'
-                }`}
-              >
-                {title}
-              </span>
-              <div
-                className={`text-3xl sm:text-4xl font-extrabold tracking-tight mt-1.5 tnum font-display ${
-                  isOverdueAttention
-                    ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
-                    : 'text-[#1B1915] dark:text-[#EFE9DD]'
-                }`}
-              >
-                {count}
-              </div>
-              <div className="text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C] mt-2 flex items-center gap-1.5">
-                {subtitle}
-              </div>
+        <div className="p-4 sm:p-5 flex flex-col justify-between h-full space-y-3">
+          {/* Top Row: Metric Title & Status Icon */}
+          <div className="flex items-center justify-between gap-2">
+            <span
+              className={`text-xs uppercase tracking-wider font-semibold truncate ${
+                isOverdueAttention
+                  ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
+                  : 'text-[#736B5E] dark:text-[#9A9183]'
+              }`}
+            >
+              {title}
+            </span>
+            <div className="shrink-0">{icon}</div>
+          </div>
+
+          {/* Bottom Area: Big Metric Number & Context Telemetry */}
+          <div>
+            <div
+              className={`text-2xl sm:text-3xl font-extrabold tracking-tight tnum font-display ${
+                isOverdueAttention
+                  ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
+                  : 'text-[#1B1915] dark:text-[#EFE9DD]'
+              }`}
+            >
+              {count}
             </div>
-            {icon}
+            <div className="text-xs text-[#5A5348] dark:text-[#B5AC9C] mt-1.5 flex items-center gap-1.5 min-h-[1.25rem] truncate">
+              {subtitle}
+            </div>
           </div>
         </div>
       </Card>
@@ -437,19 +440,19 @@ export default function DashboardPage() {
       {/* Production Analytics for Active Workspace */}
       <div className="space-y-6">
         {/* 4-KPI Metric Cards */}
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={6}>
+        <Row gutter={[16, 16]} className="items-stretch">
+          <Col xs={24} sm={12} lg={6} className="flex flex-col">
             <KpiMetricCard
               title={t('activeProjects')}
               count={metrics.totalProjects}
               subtitle={
                 <>
-                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8]" />
-                  <span>{t('accessibleWorkspaces')}</span>
+                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8] shrink-0" />
+                  <span className="truncate">{t('accessibleWorkspaces')}</span>
                 </>
               }
               icon={
-                <div className="w-11 h-11 rounded-lg bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-lg shadow-xs">
+                <div className="w-8 h-8 rounded-md bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-sm shadow-xs">
                   <FolderOutlined />
                 </div>
               }
@@ -461,20 +464,20 @@ export default function DashboardPage() {
             />
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={6} className="flex flex-col">
             <KpiMetricCard
               title={t('totalTasks')}
               count={metrics.totalTasks}
               subtitle={
                 <>
-                  <span className="w-2 h-2 rounded-full bg-[#7A5818] dark:bg-[#D4B26E]" />
-                  <span>
+                  <span className="w-2 h-2 rounded-full bg-[#7A5818] dark:bg-[#D4B26E] shrink-0" />
+                  <span className="truncate">
                     {metrics.doneCount} {t('completed')} ({completionRate}%)
                   </span>
                 </>
               }
               icon={
-                <div className="w-11 h-11 rounded-lg bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 border border-[#7A5818]/25 dark:border-[#D4B26E]/30 flex items-center justify-center text-[#7A5818] dark:text-[#D4B26E] text-lg shadow-xs">
+                <div className="w-8 h-8 rounded-md bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 border border-[#7A5818]/25 dark:border-[#D4B26E]/30 flex items-center justify-center text-[#7A5818] dark:text-[#D4B26E] text-sm shadow-xs">
                   <CheckSquareOutlined />
                 </div>
               }
@@ -486,20 +489,20 @@ export default function DashboardPage() {
             />
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={6} className="flex flex-col">
             <KpiMetricCard
               title={t('inProgress')}
               count={metrics.inProgressCount}
               subtitle={
                 <>
-                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8]" />
-                  <span>
+                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8] shrink-0" />
+                  <span className="truncate">
                     {metrics.todoCount} {t('pendingInQueue')}
                   </span>
                 </>
               }
               icon={
-                <div className="w-11 h-11 rounded-lg bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-lg shadow-xs">
+                <div className="w-8 h-8 rounded-md bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-sm shadow-xs">
                   <SyncOutlined spin={metrics.inProgressCount > 0} />
                 </div>
               }
@@ -511,7 +514,7 @@ export default function DashboardPage() {
             />
           </Col>
 
-          <Col xs={24} sm={12} lg={6}>
+          <Col xs={24} sm={12} lg={6} className="flex flex-col">
             <KpiMetricCard
               title={t('overdueTasks')}
               count={metrics.overdueCount}
@@ -519,20 +522,20 @@ export default function DashboardPage() {
               subtitle={
                 <>
                   <span
-                    className={`w-2 h-2 rounded-full ${
+                    className={`w-2 h-2 rounded-full shrink-0 ${
                       metrics.overdueCount > 0
                         ? 'bg-[#9C2E1F] dark:bg-[#EE8A78]'
                         : 'bg-[#235832] dark:bg-[#9CC5A1]'
                     }`}
                   />
-                  <span>
+                  <span className="truncate">
                     {metrics.overdueCount > 0 ? t('requiresAttention') : t('deadlinesOnTrack')}
                   </span>
                 </>
               }
               icon={
                 <div
-                  className={`w-11 h-11 rounded-lg flex items-center justify-center text-lg shadow-xs ${
+                  className={`w-8 h-8 rounded-md flex items-center justify-center text-sm shadow-xs ${
                     metrics.overdueCount > 0
                       ? 'bg-[#FCE8E5] border border-[#EE8A78]/30 text-[#9C2E1F] dark:text-[#EE8A78]'
                       : 'bg-[#E1EFE4] dark:bg-[#152618] border border-[#9CC5A1]/20 text-[#235832] dark:text-[#9CC5A1]'
