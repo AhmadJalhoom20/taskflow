@@ -1,7 +1,8 @@
 'use client';
 
 // ============================================================================
-// 1. IMPORTS
+// 1. الاستيرادات (Imports)
+// بنجيب الأيقونات وأزرار Ant Design والمساعدات من الـ Context
 // ============================================================================
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -21,11 +22,13 @@ import { Project } from '@/types';
 import { DataService } from '@/services/dataStore';
 
 // ============================================================================
-// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// 2. منطقة التعديل السريع (Constants & Styles)
+// هان مفتاح الكاش وستايلات السايد بار عشان تعدل أي زر أو لون بسرعة
 // ============================================================================
 const CACHE_KEY = 'taskflow_cached_projects';
 
 const STYLES = {
+  // السايد بار مثبت h-full و shrink-0 عشان ما ينزل لتحت بالمرة
   sidebarBase:
     'relative flex flex-col shrink-0 border-e border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#11100E] transition-all duration-200 select-none z-30 h-full',
   primaryNewProjectBtn:
@@ -39,7 +42,7 @@ const STYLES = {
 };
 
 // ============================================================================
-// 3. TYPES & INTERFACES
+// 3. الأنواع والواجهات (Types & Interfaces)
 // ============================================================================
 export interface AppSidebarProps {
   collapsed: boolean;
@@ -56,8 +59,9 @@ interface ProjectItemProps {
 }
 
 // ============================================================================
-// 4. HELPER FUNCTIONS
+// 4. دوال مساعدة (Helper Functions)
 // ============================================================================
+// بنجيب قائمة المشاريع من الكاش أول إشي عشان ما يضل السايد بار فاضي وهو بحمل
 function readCachedProjects(): Project[] {
   if (typeof window === 'undefined') return [];
   try {
@@ -69,7 +73,8 @@ function readCachedProjects(): Project[] {
 }
 
 // ============================================================================
-// 5. SUB-COMPONENTS
+// 5. المكونات الفرعية (Sub-Components)
+// عنصر المشروع بالسايد بار: رابط مختصر لفتح المشروع، وإذا مطوي بنعرض تلميح بالاسم
 // ============================================================================
 function SidebarProjectItem({
   project,
@@ -108,7 +113,8 @@ function SidebarProjectItem({
 }
 
 // ============================================================================
-// 6. MAIN COMPONENT
+// 6. المكون الرئيسي (AppSidebar)
+// السايد بار كامل: رأس مساحة العمل، زر مشروع جديد، رابط الداشبورد، وقائمة المشاريع
 // ============================================================================
 export default function AppSidebar({
   collapsed,

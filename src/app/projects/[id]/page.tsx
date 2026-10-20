@@ -1,7 +1,8 @@
 'use client';
 
 // ============================================================================
-// 1. IMPORTS
+// 1. الاستيرادات (Imports)
+// كل ما بنحتاجه للوحة الكانبان: سحب وإفلات المهام، الأيقونات، والـ context
 // ============================================================================
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
@@ -58,6 +59,7 @@ import { KanbanCard } from '@/components/kanban/KanbanCard';
 import ProjectDetailSkeleton from '@/components/ui/ProjectDetailSkeleton';
 import { PrioritySignalBadge, PrioritySignalIcon } from '@/components/ui/PrioritySignalBadge';
 
+// بنحمل المودال ودرج تفاصيل المهمة وقت اللزوم عشان الأداء يضل طلقة
 const TeamRosterModal = dynamic(() => import('@/components/ui/TeamRosterModal'), { ssr: false });
 const TaskDetailDrawer = dynamic(
   () => import('@/components/kanban/TaskDetailDrawer').then((mod) => mod.TaskDetailDrawer),
@@ -67,9 +69,9 @@ const TaskDetailDrawer = dynamic(
 const { Title, Text, Paragraph } = Typography;
 
 // ============================================================================
-// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// 2. منطقة التعديل السريع (Constants & Styles)
+// هان بتعدل ألوان أعمدة الكانبان (قيد الانتظار، قيد التنفيذ، مكتملة)، الأوزان، والستايلات
 // ============================================================================
-// Edit limits, column metadata, priority weights, and styling presets here.
 const CONFIG = {
   maxTitleLength: 120,
   minTitleLength: 3,
@@ -78,12 +80,14 @@ const CONFIG = {
   teamRosterPreviewCount: 5,
 } as const;
 
+// أوزان الأولوية عشان نرتب المهام من الأهم للأقل أهمية
 const PRIORITY_WEIGHTS: Record<TaskPriority, number> = {
   high: 3,
   medium: 2,
   low: 1,
 };
 
+// ألوان ومؤشرات وتأثيرات السحب لأعمدة الكانبان الثلاثة
 const KANBAN_COLUMNS_CONFIG: Record<
   TaskStatus,
   {
@@ -125,6 +129,7 @@ const KANBAN_COLUMNS_CONFIG: Record<
   },
 };
 
+// تنسيقات الـ Tailwind للوحة التحكم وأعمدة الكانبان - هان بنحدد مسافات وارتفاع الأعمدة
 const STYLES = {
   container: 'space-y-4',
   card: 'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark',
@@ -234,10 +239,9 @@ function filterAndSortTasks(
 }
 
 // ============================================================================
-// 5. SUB-COMPONENTS
+// 5. المكونات الفرعية (Sub-Components)
+// عمود الكانبان (Kanban Column): مسؤول عن السحب والإفلات، عرض كروت المهام، والزر السريع لإضافة مهمة
 // ============================================================================
-
-
 interface KanbanColumnShellProps {
   status: TaskStatus;
   title: string;
@@ -353,7 +357,8 @@ function KanbanColumnShell({
 }
 
 // ============================================================================
-// 6. MAIN COMPONENT
+// 6. المكون الرئيسي (Project Details Page)
+// صفحة المشروع الكاملة: اللوحة العلوية الرشيقة، الفلاتر والبحث الموحد، وأعمدة الكانبان
 // ============================================================================
 export default function ProjectDetailsPage() {
   const { message } = App.useApp();
@@ -969,9 +974,9 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className={STYLES.container}>
-      {/* Unified Project Workbench Header & Control Strip */}
+      {/* لوحة تحكم المشروع وشريط الفلاتر الموحد: شلنا الكروت العملاقة والمكررة وصارت اللوحة خفيفة ومرتبة */}
       <div className="tactile-card border border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark rounded-xl p-4 sm:p-5 space-y-4">
-        {/* Row 1: Project Identity, Telemetry Chips & Action Buttons */}
+        {/* السطر الأول: اسم المشروع، شارة المالك، إحصائيات سريعة، وأزرار الإعدادات وإضافة مهمة */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 flex-wrap">
             <Title level={2} className={STYLES.pageTitle}>

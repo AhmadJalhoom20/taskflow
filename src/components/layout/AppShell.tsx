@@ -1,7 +1,8 @@
 'use client';
 
 // ============================================================================
-// 1. IMPORTS
+// 1. الاستيرادات (Imports)
+// بنجيب المكونات الأساسية: النافبار، السايد بار، الدرج للموبايل، ومربع الأوامر
 // ============================================================================
 import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
@@ -13,13 +14,17 @@ import AppSidebar from '@/components/layout/AppSidebar';
 import CommandPalette from '@/components/ui/CommandPalette';
 
 // ============================================================================
-// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// 2. منطقة التعديل السريع (Constants & Styles)
+// هان مفتاح الحفظ بالمتصفح، والصفحات العامة، والستايل الأساسي لهيكل الموقع
 // ============================================================================
 const CONFIG = {
+  // مفتاح تخزين حالة السايد بار بالـ localStorage عشان يتذكر إذا كان مفتوح أو مطوي
   sidebarStorageKey: 'taskflow_sidebar_collapsed',
+  // الصفحات العامة اللي ما بتحتاج سايد بار
   publicRoutes: ['/', '/login', '/register'],
 } as const;
 
+// الستايلات الأساسية - مثبتين الارتفاع h-screen و overflow-hidden عشان نمنع أي نزول أو التفاف للسايد بار
 const STYLES = {
   rootContainer:
     'h-screen flex flex-col bg-[#F4F4F2] dark:bg-[#0C0B0A] text-[#1B1915] dark:text-[#EFE9DD] transition-colors overflow-hidden',
@@ -29,15 +34,16 @@ const STYLES = {
 } as const;
 
 // ============================================================================
-// 3. TYPES & INTERFACES
+// 3. الأنواع والواجهات (Types & Interfaces)
 // ============================================================================
 interface AppShellProps {
   children: React.ReactNode;
 }
 
 // ============================================================================
-// 4. HELPER FUNCTIONS & HOOKS
+// 4. دوال مساعدة (Helper Functions)
 // ============================================================================
+// بنجيب حالة السايد بار المحفوظة بالمتصفح أول ما يشتغل الموقع
 function getInitialSidebarCollapsed(): boolean {
   if (typeof window === 'undefined') return false;
   try {
@@ -49,12 +55,8 @@ function getInitialSidebarCollapsed(): boolean {
 }
 
 // ============================================================================
-// 5. SUB-COMPONENTS
-// ============================================================================
-// (Sub-components can be extracted here as shell grows)
-
-// ============================================================================
-// 6. MAIN COMPONENT
+// 5. المكون الرئيسي (AppShell)
+// الهيكل العام: النافبار فوق، وجواه السايد بار ع جنب والمحتوى بالنص
 // ============================================================================
 export default function AppShell({ children }: AppShellProps) {
   const { user } = useAuth();
@@ -65,12 +67,12 @@ export default function AppShell({ children }: AppShellProps) {
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  // Close mobile drawer on route change
+  // أول ما يتغير الرابط بنسكر درج الموبايل تلقائيا عشان ما يضل مغطي الشاشة
   useEffect(() => {
     setMobileDrawerOpen(false);
   }, [pathname]);
 
-  // Global Keyboard shortcut: Cmd+K / Ctrl+K
+  // اختصار الكيبورد السريع (Cmd+K أو Ctrl+K) لفتح باليت الأوامر والبحث من أي مكان
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -82,6 +84,7 @@ export default function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // دالة فتح/تسكير السايد بار: بالتلفون بنفتح الـ Drawer، وبالكمبيوتر بنطوي السايد بار وبنحفظ الحالة
   const handleToggleSidebar = () => {
     if (typeof window !== 'undefined' && window.innerWidth < 768) {
       setMobileDrawerOpen((prev) => !prev);
@@ -104,16 +107,19 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className={STYLES.rootContainer}>
+      {/* النافبار العلوي */}
       <Navbar
         onToggleSidebar={!isPublicPage ? handleToggleSidebar : undefined}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
       />
 
       {isPublicPage ? (
+        // إذا صفحة عامة (زي الهبوط أو تسجيل الدخول) بنعرض المحتوى لحاله بدون سايد بار
         <main className={STYLES.publicMain}>{children}</main>
       ) : (
+        // جسم التطبيق لمساحة العمل
         <div className={STYLES.appBody}>
-          {/* Desktop Workspace Sidebar */}
+          {/* السايد بار بالديسكتوب: مثبت h-full و shrink-0 عشان ما ينزل لتحت بالمرة */}
           <div className="hidden md:flex h-full shrink-0">
             <AppSidebar
               collapsed={sidebarCollapsed}
@@ -122,7 +128,7 @@ export default function AppShell({ children }: AppShellProps) {
             />
           </div>
 
-          {/* Mobile Workspace Drawer */}
+          {/* درج السايد بار بالموبايل: بيفتح بسلاسة وبياخد اتجاه اليمين بالعربي والشمال بالإنجليزي */}
           <Drawer
             open={mobileDrawerOpen}
             onClose={() => setMobileDrawerOpen(false)}
@@ -142,11 +148,12 @@ export default function AppShell({ children }: AppShellProps) {
             />
           </Drawer>
 
-          {/* Main Content Viewport */}
+          {/* منطقة المحتوى الرئيسي والصفحات */}
           <main className={STYLES.appMain}>{children}</main>
         </div>
       )}
 
+      {/* نافذة الأوامر السريعة والبحث الشامل */}
       <CommandPalette
         open={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
