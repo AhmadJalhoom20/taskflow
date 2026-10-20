@@ -17,6 +17,7 @@ server/dist/
 server/.env
 server/data/*.db-shm
 server/data/*.db-wal
+server/data/*.db
 
 # OS files
 .DS_Store
@@ -27,9 +28,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# Separate backend repository
-server/
 
 # Vercel & IDE & Agents
 .vercel

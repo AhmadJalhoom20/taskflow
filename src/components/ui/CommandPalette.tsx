@@ -1,29 +1,54 @@
 'use client';
 
+// ============================================================================
+// 1. IMPORTS
+// ============================================================================
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
-import { DataService } from '@/services/dataStore';
-import { Project } from '@/types';
-import { Modal, Input, message } from 'antd';
-import { useLanguage } from '@/context/LanguageContext';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   SearchOutlined,
   DashboardOutlined,
   PlusOutlined,
   FolderOutlined,
-  UserOutlined,
   LogoutOutlined,
   SunOutlined,
   MoonOutlined,
-  ApiOutlined,
-  ArrowRightOutlined,
   EnterOutlined,
   GlobalOutlined,
 } from '@ant-design/icons';
+import { Modal } from 'antd';
+import { useAuth } from '@/context/AuthContext';
+import { useTheme } from '@/context/ThemeContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { DataService } from '@/services/dataStore';
+import { Project } from '@/types';
 
-interface CommandItem {
+// ============================================================================
+// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// ============================================================================
+const PALETTE_CONFIG = {
+  modalWidth: 580,
+  maxResultsHeight: 'max-h-[380px]',
+};
+
+const STYLES = {
+  itemActive:
+    'bg-[#7A5818]/15 dark:bg-[#D4B26E]/15 text-[#7A5818] dark:text-[#D4B26E]',
+  itemIdle:
+    'text-[#1B1915] dark:text-[#EFE9DD] hover:bg-[#EDECE8]/60 dark:hover:bg-[#1C1A17]',
+  iconActive:
+    'bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408] font-bold shadow-sm',
+  iconIdle:
+    'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]',
+  categoryBadge:
+    'text-xs uppercase font-mono tracking-wider px-2 py-0.5 rounded bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3]/60 dark:border-[#2C2824]',
+  kbd: 'font-mono text-xs px-1.5 py-0.5 rounded bg-white dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824]',
+};
+
+// ============================================================================
+// 3. TYPES & INTERFACES
+// ============================================================================
+export interface CommandItem {
   id: string;
   category: string;
   title: string;
@@ -32,22 +57,91 @@ interface CommandItem {
   action: () => void;
 }
 
-interface CommandPaletteProps {
+export interface CommandPaletteProps {
   open: boolean;
   onClose: () => void;
 }
 
+interface CommandRowProps {
+  item: CommandItem;
+  isSelected: boolean;
+  onSelect: () => void;
+  onHover: () => void;
+}
+
+// ============================================================================
+// 4. HELPER FUNCTIONS
+// ============================================================================
+function filterCommandItems(items: CommandItem[], query: string): CommandItem[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return items;
+  return items.filter(
+    (item) =>
+      item.title.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      (item.subtitle && item.subtitle.toLowerCase().includes(q))
+  );
+}
+
+// ============================================================================
+// 5. SUB-COMPONENTS
+// ============================================================================
+function CommandRowItem({ item, isSelected, onSelect, onHover }: CommandRowProps) {
+  return (
+    <div
+      onClick={onSelect}
+      onMouseEnter={onHover}
+      className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
+        isSelected ? STYLES.itemActive : STYLES.itemIdle
+      }`}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <span
+          className={`text-base flex items-center justify-center w-8 h-8 rounded-md shrink-0 ${
+            isSelected ? STYLES.iconActive : STYLES.iconIdle
+          }`}
+        >
+          {item.icon}
+        </span>
+        <div className="min-w-0">
+          <div className="text-sm font-semibold truncate leading-tight">{item.title}</div>
+          {item.subtitle && (
+            <div className="text-xs text-[#5A5348] dark:text-[#B5AC9C] truncate mt-0.5">
+              {item.subtitle}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 pl-2 shrink-0">
+        <span className={STYLES.categoryBadge}>{item.category}</span>
+        {isSelected && (
+          <span className="text-sm text-[#7A5818] dark:text-[#D4B26E]">
+            <EnterOutlined />
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// 6. MAIN COMPONENT
+// ============================================================================
 export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuth();
   const { themeMode, toggleTheme } = useTheme();
-  const { language, toggleLanguage, t } = useLanguage();
+  const { language, toggleLanguage } = useLanguage();
+  const isArabic = language === 'ar';
 
   const [query, setQuery] = useState('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const inputRef = useRef<any>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
+  // Fetch fresh projects on open
   useEffect(() => {
     if (open && user) {
       setQuery('');
@@ -58,8 +152,8 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     }
   }, [open, user]);
 
+  // Command items catalog
   const items: CommandItem[] = useMemo(() => {
-    const isArabic = language === 'ar';
     const list: CommandItem[] = [
       // Navigation
       {
@@ -84,7 +178,25 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           onClose();
         },
       },
-      // Theme & Language & Engine
+      {
+        id: 'action-create-task',
+        category: isArabic ? 'الإجراءات السريعة' : 'Quick Actions',
+        title: isArabic ? 'إنشاء مهمة جديدة' : 'Create New Task',
+        subtitle: isArabic ? 'إضافة مهمة مباشرة إلى لوحة المهام' : 'Add a new task directly to sprint board',
+        icon: <PlusOutlined />,
+        action: () => {
+          onClose();
+          if (pathname?.startsWith('/projects/') && pathname !== '/projects/new') {
+            window.dispatchEvent(new CustomEvent('taskflow:open-create-task'));
+          } else if (projects.length > 0) {
+            sessionStorage.setItem('taskflow_auto_create_task', 'true');
+            router.push(`/projects/${projects[0].id}`);
+          } else {
+            router.push('/projects/new');
+          }
+        },
+      },
+      // Preferences
       {
         id: 'sys-language',
         category: isArabic ? 'النظام والتفضيلات' : 'System & Preferences',
@@ -109,30 +221,6 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
           onClose();
         },
       },
-      {
-        id: 'sys-ping-backend',
-        category: isArabic ? 'النظام والتفضيلات' : 'System & Preferences',
-        title: isArabic ? 'فحص اتصال خادم SQL (:5001)' : 'Check SQL Backend Health (:5001)',
-        subtitle: isArabic ? 'التحقق من حالة قاعدة بيانات SQLite' : 'Verify SQLite relational database status and response latency',
-        icon: <ApiOutlined />,
-        action: async () => {
-          onClose();
-          const res = await DataService.checkBackendHealth();
-          if (res.connected) {
-            message.success(
-              isArabic
-                ? `خادم SQL نشط: المنفذ 5001 (تشغيل: ${res.uptime}ث)`
-                : `SQL Backend Live: Port 5001 (Uptime: ${res.uptime}s, Tables: ${res.database?.tablesCount || 4})`
-            );
-          } else {
-            message.warning(
-              isArabic
-                ? 'خادم SQL غير متصل. يرجى التحقق من تشغيله.'
-                : 'SQL Backend is offline. Please ensure server is running on port 5001.'
-            );
-          }
-        },
-      },
       // Account
       {
         id: 'acc-signout',
@@ -147,7 +235,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       },
     ];
 
-    // Accessible Projects
+    // Accessible Projects Navigation
     projects.forEach((proj) => {
       list.push({
         id: `proj-${proj.id}`,
@@ -163,25 +251,19 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
     });
 
     return list;
-  }, [router, onClose, themeMode, toggleTheme, user, logout, projects, language, toggleLanguage]);
+  }, [router, pathname, onClose, themeMode, toggleTheme, user, logout, projects, isArabic, toggleLanguage]);
 
+  // Derived filtered list — Zero extra useEffect
   const filteredItems = useMemo(() => {
-    if (!query.trim()) return items;
-    const q = query.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.title.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        (item.subtitle && item.subtitle.toLowerCase().includes(q))
-    );
+    return filterCommandItems(items, query);
   }, [items, query]);
 
-  // Reset selected index when filtered items change
+  // Reset selected item pointer on query change
   useEffect(() => {
     setSelectedIndex(0);
   }, [filteredItems.length]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       setSelectedIndex((prev) => (prev + 1) % Math.max(1, filteredItems.length));
@@ -194,7 +276,7 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
         filteredItems[selectedIndex].action();
       }
     }
-  };
+  }
 
   return (
     <Modal
@@ -202,110 +284,80 @@ export default function CommandPalette({ open, onClose }: CommandPaletteProps) {
       onCancel={onClose}
       footer={null}
       closable={false}
-      width={580}
+      width={PALETTE_CONFIG.modalWidth}
       centered
       className="taskflow-command-palette-modal"
       styles={{
-        body: {
-          padding: 0,
-        },
+        body: { padding: 0 },
       }}
     >
       <div
         className={`flex flex-col max-h-[480px] rounded-xl overflow-hidden ${
-          themeMode === 'dark' ? 'bg-[#0e131f] text-slate-100 border border-[#1b2336]' : 'bg-white text-slate-900'
+          themeMode === 'dark'
+            ? 'bg-[#141211] text-[#EFE9DD] border border-[#2C2824]'
+            : 'bg-white text-[#1B1915] border border-[#DDDAD3] shadow-2xl'
         }`}
       >
         {/* Search Input Bar */}
-        <div className="p-3.5 border-b border-slate-200 dark:border-[#1b2336] flex items-center gap-3">
-          <SearchOutlined className="text-amber-500 text-base" />
+        <div className="p-3.5 border-b border-[#DDDAD3] dark:border-[#2C2824] flex items-center gap-3">
+          <SearchOutlined className="text-[#7A5818] dark:text-[#D4B26E] text-base shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search commands, projects, actions..."
-            className="flex-1 bg-transparent text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none"
+            placeholder={
+              isArabic
+                ? 'ابحث في الأوامر، المشاريع، الإجراءات...'
+                : 'Search commands, projects, actions...'
+            }
+            className="flex-1 bg-transparent text-sm text-[#1B1915] dark:text-[#EFE9DD] placeholder-[#5A5348] dark:placeholder-[#B5AC9C] focus:outline-none"
             autoFocus
           />
-          <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#161d2e] border border-slate-200 dark:border-[#1b2336] text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-mono uppercase px-2 py-0.5 rounded bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] text-[#5A5348] dark:text-[#B5AC9C]">
             ESC
           </span>
         </div>
 
         {/* Results List */}
-        <div className="overflow-y-auto p-2 divide-y divide-slate-100/50 dark:divide-[#1b2336]/40 max-h-[380px]">
+        <div
+          className={`overflow-y-auto p-2 divide-y divide-[#DDDAD3]/50 dark:divide-[#2C2824]/40 ${PALETTE_CONFIG.maxResultsHeight}`}
+        >
           {filteredItems.length === 0 ? (
-            <div className="py-12 text-center text-xs text-slate-400">
-              No matching commands or projects found.
+            <div className="py-12 text-center text-sm text-[#5A5348] dark:text-[#B5AC9C]">
+              {isArabic
+                ? 'لم يتم العثور على أوامر أو مشاريع مطابقة.'
+                : 'No matching commands or projects found.'}
             </div>
           ) : (
-            filteredItems.map((item, idx) => {
-              const isSelected = idx === selectedIndex;
-              return (
-                <div
-                  key={item.id}
-                  onClick={item.action}
-                  onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-amber-500/15 text-amber-800 dark:text-amber-400'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-[#161d2e]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={`text-sm flex items-center justify-center w-7 h-7 rounded-md ${
-                        isSelected
-                          ? 'bg-amber-500 text-slate-950 font-bold'
-                          : 'bg-slate-100 dark:bg-[#161d2e] text-slate-500 dark:text-slate-400'
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold truncate leading-tight">
-                        {item.title}
-                      </div>
-                      {item.subtitle && (
-                        <div className="text-[11px] text-slate-400 truncate mt-0.5">
-                          {item.subtitle}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 pl-2">
-                    <span className="text-[10px] uppercase font-mono tracking-wider px-1.5 py-0.5 rounded bg-slate-100 dark:bg-[#171c26] text-slate-400 border border-slate-200/60 dark:border-[#1e2430]">
-                      {item.category}
-                    </span>
-                    {isSelected && (
-                      <span className="text-xs text-amber-600 dark:text-amber-400">
-                        <EnterOutlined />
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })
+            filteredItems.map((item, idx) => (
+              <CommandRowItem
+                key={item.id}
+                item={item}
+                isSelected={idx === selectedIndex}
+                onSelect={item.action}
+                onHover={() => setSelectedIndex(idx)}
+              />
+            ))
           )}
         </div>
 
         {/* Footer Hint */}
-        <div className="p-2.5 px-4 bg-slate-50 dark:bg-[#0e121a] border-t border-slate-200 dark:border-[#1e2430] flex items-center justify-between text-[11px] text-slate-400">
+        <div className="p-2.5 px-4 bg-[#EDECE8]/60 dark:bg-[#0C0B0A] border-t border-[#DDDAD3] dark:border-[#2C2824] flex items-center justify-between text-xs text-[#5A5348] dark:text-[#B5AC9C]">
           <div className="flex items-center gap-3">
             <span>
-              <kbd className="font-mono text-[10px] px-1 py-0.5 rounded bg-white dark:bg-[#171c26] border border-slate-200 dark:border-[#1e2430]">↑</kbd>{' '}
-              <kbd className="font-mono text-[10px] px-1 py-0.5 rounded bg-white dark:bg-[#171c26] border border-slate-200 dark:border-[#1e2430]">↓</kbd>{' '}
-              Navigate
+              <kbd className={STYLES.kbd}>↑</kbd> <kbd className={STYLES.kbd}>↓</kbd>{' '}
+              {isArabic ? 'تنقل' : 'Navigate'}
             </span>
             <span>
-              <kbd className="font-mono text-[10px] px-1 py-0.5 rounded bg-white dark:bg-[#171c26] border border-slate-200 dark:border-[#1e2430]">↵</kbd>{' '}
-              Select
+              <kbd className={STYLES.kbd}>↵</kbd> {isArabic ? 'اختيار' : 'Select'}
+            </span>
+            <span>
+              <kbd className={STYLES.kbd}>Esc</kbd> {isArabic ? 'إغلاق' : 'Close'}
             </span>
           </div>
-          <span>Linear Fast Navigation</span>
+          <span className="text-xs text-[#736B5E] dark:text-[#9A9183] font-medium">TaskFlow</span>
         </div>
       </div>
     </Modal>

@@ -51,10 +51,21 @@ export const translations = {
     noProjectDescription: 'No description provided.',
 
     // Dashboard Launchpad (0 projects)
+    onboardingTitle: 'Start working with TaskFlow',
+    onboardingSubtitle:
+      'No projects yet — Create your first project to start organizing tasks and collaborating with your team.',
+    onboardingStep1Title: 'Create your first project',
+    onboardingStep1Desc: 'Organize your work by team, client, or initiative.',
+    onboardingStep2Title: 'Add team members',
+    onboardingStep2Desc: 'Collaborate smoothly with your colleagues.',
+    onboardingStep3Title: 'Assign and track tasks',
+    onboardingStep3Desc: 'Set priorities, due dates, and monitor progress.',
+    createFirstProjectBtn: 'Create first project',
+    orChooseTemplate: 'Or choose a starter template',
     workspaceInitialized: 'Workspace Initialized',
     welcomeTitle: 'Welcome to TaskFlow',
     welcomeSubtitle:
-      'Your pure SQL workspace is configured and ready. Choose a production-tested template below to launch your first sprint board, or initialize an empty workspace with custom scope.',
+      'Your workspace is configured and ready. Choose a production-tested template below to launch your first sprint board, or initialize an empty workspace with custom scope.',
     selectStarterTemplate: 'Select a Starter Template',
     orBuildFromScratch: 'or build from scratch',
     engineeringSprint: 'Engineering Sprint',
@@ -221,6 +232,26 @@ export const translations = {
     typeProjectNamePlaceholder: 'Type project name here...',
     confirmDeleteBtn: 'Confirm Delete',
     projectDeletedSuccess: 'Project permanently deleted',
+
+    // Extended Keys & Aliases
+    editTaskModalTitle: 'Edit Task Specifications',
+    createTaskModalTitle: 'Create New Task',
+    createTaskAction: 'Create Task',
+    addMemberButton: 'Add Member',
+    removeAction: 'Remove',
+    removeMemberAction: 'Remove Member',
+    youIndicator: 'You',
+    dangerZoneTitle: 'Danger Zone',
+    dangerZoneDesc: 'Irreversible workspace destruction. This permanently deletes SQLite records, task cards, and member assignments.',
+    deleteProjectAction: 'Delete Project',
+    confirmDeleteModalTitle: 'Confirm Permanent Destruction',
+    irreversibleActionNotice: 'This action is immediate and non-recoverable',
+    cascadeNoticeDetails: 'All task rows, assignments, logs, and membership ties will be dropped via SQLite foreign key cascades.',
+    typeToConfirmPrompt: 'Please type the exact project name to confirm',
+    permanentlyDeleteProject: 'Permanently Delete Project',
+    creatorLabel: 'Creator',
+    created: 'Created',
+    closeAction: 'Close',
   },
   ar: {
     // Brand & Nav
@@ -266,10 +297,21 @@ export const translations = {
     noProjectDescription: 'لا يوجد وصف متاح للمشروع.',
 
     // Dashboard Launchpad (0 projects)
+    onboardingTitle: 'ابدأ العمل مع تاسك فلو',
+    onboardingSubtitle:
+      'لا توجد مشاريع حتى الآن — أنشئ مشروعك الأول لبدء تنظيم المهام والتعاون مع فريقك.',
+    onboardingStep1Title: 'أنشئ مشروعك الأول',
+    onboardingStep1Desc: 'نظّم أعمالك بحسب الفريق أو العميل أو المبادرة.',
+    onboardingStep2Title: 'أضف أعضاء الفريق',
+    onboardingStep2Desc: 'تعاون بسلاسة مع زملائك.',
+    onboardingStep3Title: 'أسند وتابع المهام',
+    onboardingStep3Desc: 'حدد الأولويات ومواعيد الاستحقاق وراقب الإنجاز.',
+    createFirstProjectBtn: 'أنشئ أول مشروع',
+    orChooseTemplate: 'أو اختر قالباً جاهزاً',
     workspaceInitialized: 'تم تهيئة مساحة العمل',
     welcomeTitle: 'مرحباً بك في TaskFlow',
     welcomeSubtitle:
-      'مساحة العمل المتصلة بمحرك SQL النقي جاهزة تماماً للإنتاج. اختر قالباً مجرباً لبدء أول لوحة سبرنت، أو أنشئ مساحة عمل فارغة بمواصفاتك المخصصة.',
+      'مساحة العمل جاهزة تماماً للإنتاج. اختر قالباً مجرباً لبدء أول لوحة سبرنت، أو أنشئ مساحة عمل فارغة بمواصفاتك المخصصة.',
     selectStarterTemplate: 'اختر قالباً جاهزاً للبدء',
     orBuildFromScratch: 'أو ابدأ من الصفر',
     engineeringSprint: 'سبرنت هندسي برمجى',
@@ -436,6 +478,26 @@ export const translations = {
     typeProjectNamePlaceholder: 'اكتب اسم المشروع هنا...',
     confirmDeleteBtn: 'تأكيد الحذف',
     projectDeletedSuccess: 'تم حذف المشروع نهائياً',
+
+    // Extended Keys & Aliases
+    editTaskModalTitle: 'تعديل مواصفات المهمة',
+    createTaskModalTitle: 'إنشاء مهمة جديدة',
+    createTaskAction: 'إنشاء المهمة',
+    addMemberButton: 'إضافة عضو',
+    removeAction: 'إزالة',
+    removeMemberAction: 'إزالة العضو',
+    youIndicator: 'أنت',
+    dangerZoneTitle: 'منطقة الخطر',
+    dangerZoneDesc: 'إجراء نهائي لا يمكن الرجوع عنه. سيؤدي لحذف سجلات المشروع وكافة بطاقات المهام وتعيينات الأعضاء.',
+    deleteProjectAction: 'حذف المشروع',
+    confirmDeleteModalTitle: 'تأكيد الحذف النهائي للمشروع',
+    irreversibleActionNotice: 'هذا الإجراء فوري وغير قابل للاسترداد',
+    cascadeNoticeDetails: 'سيتم مسح كافة صفوف المهام والتعيينات والسجلات عبر الحذف التسلسلي (Cascade) في قاعدة البيانات.',
+    typeToConfirmPrompt: 'يرجى كتابة اسم المشروع بدقة لتأكيد الحذف',
+    permanentlyDeleteProject: 'حذف المشروع نهائياً',
+    creatorLabel: 'المنشئ',
+    created: 'تاريخ الإنشاء',
+    closeAction: 'إغلاق',
   },
 };
 

@@ -48,10 +48,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (cachedUser && isMounted) {
         setUser(cachedUser);
+        setLoading(false);
       }
 
       if (!token) {
-        if (isMounted) setLoading(false);
+        if (isMounted) {
+          setUser(null);
+          setLoading(false);
+        }
         return;
       }
 

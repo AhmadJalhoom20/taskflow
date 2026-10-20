@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+// ============================================================================
+// 1. IMPORTS
+// ============================================================================
+import React, { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { useLanguage } from '@/context/LanguageContext';
-import { DataService } from '@/services/dataStore';
-import { Project, DashboardMetrics } from '@/types';
 import Link from 'next/link';
 import {
   FolderOutlined,
@@ -19,43 +19,336 @@ import {
   CrownOutlined,
   UserOutlined,
   CheckCircleOutlined,
-  RiseOutlined,
-  ClockCircleOutlined,
   SearchOutlined,
   FilterOutlined,
-  SettingOutlined,
-  AppstoreOutlined,
-  CompassOutlined,
-  BugOutlined,
-  DatabaseOutlined,
-  SafetyCertificateOutlined,
-  ThunderboltOutlined,
 } from '@ant-design/icons';
-import { Card, Row, Col, Statistic, Tag, Button, Empty, Spin, Typography, Progress, Avatar, Tooltip, Input } from 'antd';
-import TeamRosterModal from '@/components/ui/TeamRosterModal';
+import { Card, Row, Col, Tag, Button, Typography, Progress, Avatar, Tooltip, Input } from 'antd';
+import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { DataService } from '@/services/dataStore';
+import { Project, DashboardMetrics } from '@/types';
 import DashboardSkeleton from '@/components/ui/DashboardSkeleton';
+import WorkspaceOnboarding from '@/components/ui/WorkspaceOnboarding';
 
+const TeamRosterModal = dynamic(() => import('@/components/ui/TeamRosterModal'), { ssr: false });
 const { Title, Text, Paragraph } = Typography;
 
+// ============================================================================
+// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// ============================================================================
+const CACHE_KEYS = {
+  projects: 'taskflow_cached_projects',
+  metrics: 'taskflow_cached_metrics',
+};
+
+const DEFAULT_METRICS: DashboardMetrics = {
+  totalProjects: 0,
+  totalTasks: 0,
+  todoCount: 0,
+  inProgressCount: 0,
+  doneCount: 0,
+  overdueCount: 0,
+};
+
+const STYLES = {
+  kpiCardBase:
+    'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden !p-0 cursor-default',
+  projectCard:
+    'tactile-card h-full flex flex-col justify-between border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all duration-200 hover:border-[#7A5818]/40 dark:hover:border-[#D4B26E]/40',
+  headerButton:
+    'tactile-btn border-[#DDDAD3] dark:border-[#2C2824] hover:border-[#7A5818] dark:hover:border-[#D4B26E] text-[#1B1915] dark:text-[#EFE9DD] font-semibold text-sm bg-white dark:bg-[#141211]',
+};
+
+// ============================================================================
+// 3. TYPES & INTERFACES
+// ============================================================================
+interface KpiCardItemProps {
+  title: string;
+  count: number;
+  subtitle: React.ReactNode;
+  icon: React.ReactNode;
+  tooltipText: string;
+  isOverdueAttention?: boolean;
+}
+
+interface ProjectCardProps {
+  project: Project;
+  currentUserId?: string;
+  isArabic: boolean;
+  isRTL: boolean;
+  onOpenTeam: (project: Project) => void;
+  formatDateLocalized: (date: string) => string;
+  t: (key: any) => string;
+}
+
+// ============================================================================
+// 4. HELPER FUNCTIONS
+// ============================================================================
+function readSessionCache<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeSessionCache<T>(key: string, data: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // ignore
+  }
+}
+
+function filterProjectsByQuery(projects: Project[], query: string): Project[] {
+  const clean = query.trim().toLowerCase();
+  if (!clean) return projects;
+  return projects.filter(
+    (p) =>
+      p.name.toLowerCase().includes(clean) ||
+      (p.description && p.description.toLowerCase().includes(clean))
+  );
+}
+
+// ============================================================================
+// 5. SUB-COMPONENTS
+// ============================================================================
+function KpiMetricCard({
+  title,
+  count,
+  subtitle,
+  icon,
+  tooltipText,
+  isOverdueAttention,
+}: KpiCardItemProps) {
+  const cardBorderClass = isOverdueAttention
+    ? 'border-[#EE8A78]/80 dark:border-[#EE8A78]/40 bg-[#FCE8E5] dark:bg-[#331915]'
+    : 'border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211]';
+
+  return (
+    <Tooltip title={tooltipText}>
+      <Card
+        variant="outlined"
+        className={`tactile-card shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all !p-0 cursor-default ${cardBorderClass}`}
+      >
+        <div className="p-4 sm:p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <span
+                className={`text-xs sm:text-sm uppercase tracking-wider font-semibold ${
+                  isOverdueAttention
+                    ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
+                    : 'text-[#736B5E] dark:text-[#9A9183]'
+                }`}
+              >
+                {title}
+              </span>
+              <div
+                className={`text-3xl sm:text-4xl font-extrabold tracking-tight mt-1.5 tnum font-display ${
+                  isOverdueAttention
+                    ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
+                    : 'text-[#1B1915] dark:text-[#EFE9DD]'
+                }`}
+              >
+                {count}
+              </div>
+              <div className="text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C] mt-2 flex items-center gap-1.5">
+                {subtitle}
+              </div>
+            </div>
+            {icon}
+          </div>
+        </div>
+      </Card>
+    </Tooltip>
+  );
+}
+
+function ProjectCard({
+  project,
+  currentUserId,
+  isArabic,
+  isRTL,
+  onOpenTeam,
+  formatDateLocalized,
+  t,
+}: ProjectCardProps) {
+  const isOwner = project.ownerId === currentUserId;
+
+  return (
+    <Card
+      hoverable
+      variant="outlined"
+      className={STYLES.projectCard}
+      title={
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-bold truncate text-base text-[#1B1915] dark:text-[#EFE9DD] font-display">
+            {project.name}
+          </span>
+          <Tooltip
+            title={
+              isOwner
+                ? isArabic
+                  ? 'مالك المشروع (صلاحيات كاملة)'
+                  : 'Project Owner (Full Access)'
+                : isArabic
+                ? 'عضو في الفريق'
+                : 'Team Member'
+            }
+          >
+            <Tag
+              color="default"
+              icon={
+                isOwner ? (
+                  <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
+                ) : (
+                  <UserOutlined />
+                )
+              }
+              className="m-0 text-xs font-semibold border-[#DDDAD3] dark:border-[#2C2824] bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] cursor-default px-2 py-0.5"
+            >
+              {isOwner ? t('owner') : t('member')}
+            </Tag>
+          </Tooltip>
+        </div>
+      }
+      extra={
+        <Tooltip
+          title={
+            isArabic
+              ? 'عرض تفاصيل أعضاء الفريق وأدوارهم'
+              : 'View team roster and member roles'
+          }
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenTeam(project);
+            }}
+            className="text-sm text-[#5A5348] dark:text-[#B5AC9C] hover:text-[#7A5818] dark:hover:text-[#D4B26E] flex items-center gap-1 font-mono tnum cursor-pointer transition-colors"
+            title={t('teamRoster')}
+          >
+            <TeamOutlined /> {project.memberIds.length}
+          </button>
+        </Tooltip>
+      }
+    >
+      <Paragraph
+        ellipsis={{ rows: 2 }}
+        className="text-sm !text-[#5A5348] dark:!text-[#B5AC9C] min-h-[40px] !mb-3 leading-relaxed"
+      >
+        {project.description || t('noProjectDescription')}
+      </Paragraph>
+
+      {/* Member Avatars Stack */}
+      <div
+        className="flex items-center justify-between pb-3 cursor-pointer group/roster"
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpenTeam(project);
+        }}
+        title={t('teamRoster')}
+      >
+        <div className="flex items-center -space-x-1.5 overflow-hidden">
+          {project.memberIds.slice(0, 5).map((mId) => {
+            const info = project.memberDetails?.[mId];
+            const name = info?.displayName || mId;
+            const isProjectOwner = mId === project.ownerId;
+            return (
+              <Tooltip
+                key={mId}
+                title={`${name} (${isProjectOwner ? t('owner') : t('member')})`}
+              >
+                <Avatar
+                  size={24}
+                  className={`text-xs border border-white dark:border-[#141211] font-semibold ${
+                    isProjectOwner
+                      ? 'bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408]'
+                      : 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD]'
+                  }`}
+                >
+                  {name.charAt(0).toUpperCase()}
+                </Avatar>
+              </Tooltip>
+            );
+          })}
+          {project.memberIds.length > 5 && (
+            <Tooltip
+              title={
+                isArabic
+                  ? `${project.memberIds.length - 5} أعضاء إضافيون`
+                  : `${project.memberIds.length - 5} more members`
+              }
+            >
+              <span className="text-xs ms-1.5 px-2 py-0.5 rounded font-mono font-semibold text-[#7A5818] dark:text-[#D4B26E] bg-[#7A5818]/10 dark:bg-[#D4B26E]/10 group-hover/roster:bg-[#7A5818]/20 dark:group-hover/roster:bg-[#D4B26E]/20 border border-[#7A5818]/25 dark:border-[#D4B26E]/25 tnum transition-colors">
+                +{project.memberIds.length - 5}
+              </span>
+            </Tooltip>
+          )}
+        </div>
+        <span className="text-xs text-[#5A5348] dark:text-[#B5AC9C] group-hover/roster:text-[#7A5818] dark:group-hover/roster:text-[#D4B26E] font-mono tnum transition-colors">
+          {project.memberIds.length}{' '}
+          {project.memberIds.length === 1 ? t('memberSingular') : t('membersCount')}
+        </span>
+      </div>
+
+      <div className="pt-3 border-t border-[#DDDAD3] dark:border-[#2C2824] flex items-center justify-between text-xs sm:text-sm">
+        <span className="text-[#5A5348] dark:text-[#B5AC9C] text-xs tnum">
+          {t('updated')} {formatDateLocalized(project.updatedAt)}
+        </span>
+        <Link href={`/projects/${project.id}`}>
+          <Tooltip
+            title={
+              isArabic
+                ? 'فتح لوحة الكانبان لإدارة وتتبع المهام'
+                : 'Open Kanban board to manage tasks'
+            }
+          >
+            <Button
+              type="link"
+              size="small"
+              iconPlacement="end"
+              icon={isRTL ? <ArrowLeftOutlined /> : <ArrowRightOutlined />}
+              className="!text-[#7A5818] dark:!text-[#D4B26E] font-bold !px-0 hover:underline text-xs sm:text-sm"
+            >
+              {t('openKanban')}
+            </Button>
+          </Tooltip>
+        </Link>
+      </div>
+    </Card>
+  );
+}
+
+// ============================================================================
+// 6. MAIN COMPONENT
+// ============================================================================
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { t, language, formatDateLocalized, isRTL } = useLanguage();
   const isArabic = language === 'ar';
 
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>(() =>
+    readSessionCache<Project[]>(CACHE_KEYS.projects, [])
+  );
+  const [metrics, setMetrics] = useState<DashboardMetrics>(() =>
+    readSessionCache<DashboardMetrics>(CACHE_KEYS.metrics, DEFAULT_METRICS)
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
-  const [metrics, setMetrics] = useState<DashboardMetrics>({
-    totalProjects: 0,
-    totalTasks: 0,
-    todoCount: 0,
-    inProgressCount: 0,
-    doneCount: 0,
-    overdueCount: 0,
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem(CACHE_KEYS.projects);
+    }
+    return true;
   });
-  const [loading, setLoading] = useState<boolean>(true);
 
+  // Load Accessible Projects & Metrics
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -67,581 +360,373 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  const loadData = async () => {
+  async function loadData() {
     if (!user) return;
-    setLoading(true);
     try {
-      const projs = await DataService.getAccessibleProjects(user.uid);
+      const [projs, m] = await Promise.all([
+        DataService.getAccessibleProjects(user.uid),
+        DataService.getDashboardMetrics(user.uid),
+      ]);
       setProjects(projs);
-
-      const m = await DataService.getDashboardMetrics(user.uid);
       setMetrics(m);
+      writeSessionCache(CACHE_KEYS.projects, projs);
+      writeSessionCache(CACHE_KEYS.metrics, m);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  if (authLoading || loading) {
+  // Derived state — Zero extra useEffect
+  const completionRate = useMemo(() => {
+    if (!metrics.totalTasks) return 0;
+    return Math.round((metrics.doneCount / metrics.totalTasks) * 100);
+  }, [metrics.totalTasks, metrics.doneCount]);
+
+  const filteredProjects = useMemo(() => {
+    return filterProjectsByQuery(projects, searchQuery);
+  }, [projects, searchQuery]);
+
+  // Guard Clauses (Flat Control Flow)
+  if (authLoading && !user) {
     return <DashboardSkeleton />;
   }
 
-  const completionRate =
-    metrics.totalTasks > 0 ? Math.round((metrics.doneCount / metrics.totalTasks) * 100) : 0;
+  if (loading && projects.length === 0) {
+    return <DashboardSkeleton />;
+  }
 
-  const filteredProjects = projects.filter((p) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return p.name.toLowerCase().includes(q) || (p.description && p.description.toLowerCase().includes(q));
-  });
+  if (projects.length === 0) {
+    return (
+      <div className="py-4">
+        <WorkspaceOnboarding userName={user?.displayName} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-[#1e2430]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#DDDAD3] dark:border-[#2C2824]">
         <div>
-          <div className="flex items-center gap-2">
-            <Title level={2} className="!mb-0 !text-xl !font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              {t('workspaceOverview')}
-            </Title>
-          </div>
-          <Text type="secondary" className="text-xs">
-            {t('signedInAs')} <strong className="text-slate-700 dark:text-slate-300">{user?.displayName}</strong> ({user?.email})
+          <Title
+            level={2}
+            className="!mb-0 !text-2xl !font-bold tracking-tight text-[#1B1915] dark:text-[#EFE9DD] font-display"
+          >
+            {t('workspaceOverview')}
+          </Title>
+          <Text type="secondary" className="text-sm text-[#5A5348] dark:text-[#9A9183]">
+            {t('signedInAs')}{' '}
+            <strong className="text-[#1B1915] dark:text-[#EFE9DD]">{user?.displayName}</strong>{' '}
+            ({user?.email})
           </Text>
         </div>
 
         <div className="flex items-center gap-2">
-          <Link href="/projects/new">
-            <Button type="primary" icon={<PlusOutlined />} size="middle" className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 font-bold !text-slate-950 shadow-sm shadow-amber-500/20">
-              {t('newProject')}
-            </Button>
-          </Link>
+          <Tooltip title={t('newProject')}>
+            <Link href="/projects/new">
+              <Button icon={<PlusOutlined />} size="middle" className={STYLES.headerButton}>
+                {t('newProject')}
+              </Button>
+            </Link>
+          </Tooltip>
         </div>
       </div>
 
-      {/* Conditionally Render: Onboarding Launchpad (0 projects) vs Production Analytics (1+ projects) */}
-      {projects.length === 0 ? (
-        <div className="space-y-6">
-          {/* Welcome Hero Canvas */}
-          <div className="relative rounded-2xl border border-slate-200 dark:border-[#1b2336] bg-gradient-to-b from-slate-50 to-white dark:from-[#141a29] dark:to-[#080b11] p-6 sm:p-8 overflow-hidden">
-            <div className="max-w-2xl space-y-3">
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                {t('welcomeTitle')}, {user?.displayName || 'Engineer'}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-normal">
-                {t('welcomeSubtitle')}
-              </p>
-            </div>
-          </div>
-
-          {/* 3 Interactive Quick-Start Templates */}
-          <div>
-            <div className="flex items-center justify-between mb-3.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                {t('selectStarterTemplate')}
-              </span>
-              <Link href="/projects/new" className="text-xs text-amber-600 dark:text-amber-400 hover:underline">
-                {t('orBuildFromScratch')} &rarr;
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Template 1: Engineering Sprint */}
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
-                      <AppstoreOutlined className="text-lg" />
-                    </div>
-                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300">
-                      {isArabic ? 'موصى به' : 'Recommended'}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                      {t('engineeringSprint')}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      {t('sprintDesc')}
-                    </p>
-                  </div>
-                  <div className="space-y-1.5 pt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>{t('sprintFeat1')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>{t('sprintFeat2')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>{t('sprintFeat3')}</span>
-                    </div>
-                  </div>
+      {/* Production Analytics for Active Workspace */}
+      <div className="space-y-6">
+        {/* 4-KPI Metric Cards */}
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={6}>
+            <KpiMetricCard
+              title={t('activeProjects')}
+              count={metrics.totalProjects}
+              subtitle={
+                <>
+                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8]" />
+                  <span>{t('accessibleWorkspaces')}</span>
+                </>
+              }
+              icon={
+                <div className="w-11 h-11 rounded-lg bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-lg shadow-xs">
+                  <FolderOutlined />
                 </div>
+              }
+              tooltipText={
+                isArabic
+                  ? 'المشاريع المتاحة لك بحسب صلاحيات الوصول'
+                  : 'Accessible workspace projects for your account'
+              }
+            />
+          </Col>
 
-                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-[#1b2336]">
-                  <Link href="/projects/new?template=sprint">
-                    <Button type="primary" block className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold">
-                      {t('useSprintTemplate')}
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Template 2: Product & UX Roadmap */}
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                      <CompassOutlined className="text-lg" />
-                    </div>
-                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-slate-200 dark:border-[#1e2430] bg-slate-100 dark:bg-[#162032] text-slate-700 dark:text-slate-300">
-                      {isArabic ? 'تخطيط ومواصفات' : 'Specs & Roadmap'}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                      {t('productRoadmap')}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      {t('roadmapDesc')}
-                    </p>
-                  </div>
-                  <div className="space-y-1.5 pt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                      <span>{t('roadmapFeat1')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                      <span>{t('roadmapFeat2')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                      <span>{t('roadmapFeat3')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-[#1e2430]">
-                  <Link href="/projects/new?template=roadmap">
-                    <Button block className="border-slate-300 dark:border-[#222938] font-medium hover:!border-purple-500 hover:!text-purple-600">
-                      {t('useRoadmapTemplate')}
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Template 3: Architecture & Bug Triage */}
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                      <BugOutlined className="text-lg" />
-                    </div>
-                    <span className="font-mono text-[10px] font-semibold uppercase px-2 py-0.5 rounded border border-slate-200 dark:border-[#1e2430] bg-slate-100 dark:bg-[#162032] text-slate-700 dark:text-slate-300">
-                      {isArabic ? 'عمليات واستقرار' : 'Reliability & Ops'}
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                      {t('architectureTriage')}
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                      {t('triageDesc')}
-                    </p>
-                  </div>
-                  <div className="space-y-1.5 pt-2 text-[11px] text-slate-600 dark:text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{t('triageFeat1')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{t('triageFeat2')}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      <span>{t('triageFeat3')}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-5 mt-4 border-t border-slate-100 dark:border-[#1e2430]">
-                  <Link href="/projects/new?template=triage">
-                    <Button block className="border-slate-300 dark:border-[#222938] font-medium hover:!border-emerald-500 hover:!text-emerald-600">
-                      {t('useTriageTemplate')}
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-            </div>
-          </div>
-
-          {/* Architecture Guarantee Callout */}
-          <div className="p-4 rounded-xl border border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 flex-shrink-0">
-                <DatabaseOutlined />
-              </div>
-              <div>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {t('pureRelationalArchitecture')}
-                </span>
-                <p className="text-slate-500 dark:text-slate-400 mt-0.5 text-[11px]">
-                  {t('zeroVendorLockin')}
-                </p>
-              </div>
-            </div>
-            <Link href="/projects/new">
-              <Button size="small" icon={<PlusOutlined />} className="border-slate-300 dark:border-[#222938] whitespace-nowrap">
-                {t('initCustomProject')}
-              </Button>
-            </Link>
-          </div>
-        </div>
-      ) : (
-        /* Analytics & Active Workspaces for 1+ Projects */
-        <div className="space-y-6">
-          {/* 4-KPI Metric Cards - Cyber Sapphire & Obsidian Architecture */}
-          <Row gutter={[16, 16]}>
-            {/* Active Projects */}
-            <Col xs={24} sm={12} lg={6}>
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] shadow-card-elevation dark:shadow-card-elevation-dark relative overflow-hidden !p-0"
-              >
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
-                        {t('activeProjects')}
-                      </span>
-                      <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1.5 tnum font-sans">
-                        {metrics.totalProjects}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-cyan-500" />
-                        <span>{t('accessibleWorkspaces')}</span>
-                      </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-xl bg-cyan-500/10 dark:bg-cyan-500/15 border border-cyan-500/25 flex items-center justify-center text-cyan-600 dark:text-cyan-400 text-base shadow-xs">
-                      <FolderOutlined />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-
-            {/* Total Tasks */}
-            <Col xs={24} sm={12} lg={6}>
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] shadow-card-elevation dark:shadow-card-elevation-dark relative overflow-hidden !p-0"
-              >
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
-                        {t('totalTasks')}
-                      </span>
-                      <div className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1.5 tnum font-sans">
-                        {metrics.totalTasks}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-indigo-500" />
-                        <span>{metrics.doneCount} {t('completed')} ({completionRate}%)</span>
-                      </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base shadow-xs">
-                      <CheckSquareOutlined />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-
-            {/* In Progress */}
-            <Col xs={24} sm={12} lg={6}>
-              <Card
-                variant="outlined"
-                className="taskflow-card-hover border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] shadow-card-elevation dark:shadow-card-elevation-dark relative overflow-hidden !p-0"
-              >
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
-                        {t('inProgress')}
-                      </span>
-                      <div className="text-3xl font-extrabold tracking-tight text-amber-600 dark:text-amber-400 mt-1.5 tnum font-sans">
-                        {metrics.inProgressCount}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span>{metrics.todoCount} {t('pendingInQueue')}</span>
-                      </div>
-                    </div>
-                    <div className="w-11 h-11 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/20 flex items-center justify-center text-amber-600 dark:text-amber-400 text-base shadow-xs">
-                      <SyncOutlined spin={metrics.inProgressCount > 0} />
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-
-            {/* Overdue Tasks */}
-            <Col xs={24} sm={12} lg={6}>
-              <Card
-                variant="outlined"
-                className={`taskflow-card-hover shadow-card-elevation dark:shadow-card-elevation-dark relative overflow-hidden transition-all !p-0 ${
-                  metrics.overdueCount > 0
-                    ? 'border-rose-400/80 dark:border-rose-800/60 bg-rose-50/30 dark:bg-rose-950/20'
-                    : 'border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827]'
-                }`}
-              >
-                <div className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <span
-                        className={`text-[11px] uppercase tracking-wider font-semibold ${
-                          metrics.overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'
-                        }`}
-                      >
-                        {t('overdueTasks')}
-                      </span>
-                      <div
-                        className={`text-3xl font-extrabold tracking-tight mt-1.5 tnum font-sans ${
-                          metrics.overdueCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
-                        }`}
-                      >
-                        {metrics.overdueCount}
-                      </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            metrics.overdueCount > 0 ? 'bg-rose-500' : 'bg-emerald-500'
-                          }`}
-                        />
-                        <span>{metrics.overdueCount > 0 ? t('requiresAttention') : t('deadlinesOnTrack')}</span>
-                      </div>
-                    </div>
-                    <div
-                      className={`w-11 h-11 rounded-xl flex items-center justify-center text-base shadow-xs ${
-                        metrics.overdueCount > 0
-                          ? 'bg-rose-500/10 dark:bg-rose-500/15 border border-rose-500/20 text-rose-600 dark:text-rose-400'
-                          : 'bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400'
-                      }`}
-                    >
-                      {metrics.overdueCount > 0 ? <WarningOutlined /> : <CheckCircleOutlined />}
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-
-          {/* Sprint Velocity Metric */}
-          {metrics.totalTasks > 0 && (
-            <Card
-              variant="outlined"
-              className="border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none"
-            >
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="space-y-0.5 w-full md:w-auto">
-                  <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                    {t('sprintVelocity')}
-                  </div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400">
-                    {metrics.doneCount} of {metrics.totalTasks} {t('velocitySubtext')}
-                  </div>
-                </div>
-                <div className="w-full md:w-64 space-y-1">
-                  <div className="flex justify-between text-xs font-semibold tnum">
-                    <span className="text-slate-500">{t('progress')}</span>
-                    <span className="text-amber-600 dark:text-amber-400 font-bold">{completionRate}%</span>
-                  </div>
-                  <Progress
-                    percent={completionRate}
-                    showInfo={false}
-                    strokeColor="#f59e0b"
-                    railColor="rgba(100, 116, 139, 0.2)"
-                    size={['100%', 6]}
-                  />
-                </div>
-              </div>
-            </Card>
-          )}
-
-          {/* Projects Section */}
-          <div className="space-y-4 pt-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Title level={4} className="!mb-0 !text-base !font-bold text-slate-900 dark:text-slate-100">
-                    {t('yourAccessibleProjects')}
-                  </Title>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#171c26] border border-slate-200/80 dark:border-[#1e2430] text-slate-500 dark:text-slate-400 tnum">
-                    {projects.length}
+          <Col xs={24} sm={12} lg={6}>
+            <KpiMetricCard
+              title={t('totalTasks')}
+              count={metrics.totalTasks}
+              subtitle={
+                <>
+                  <span className="w-2 h-2 rounded-full bg-[#7A5818] dark:bg-[#D4B26E]" />
+                  <span>
+                    {metrics.doneCount} {t('completed')} ({completionRate}%)
                   </span>
+                </>
+              }
+              icon={
+                <div className="w-11 h-11 rounded-lg bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 border border-[#7A5818]/25 dark:border-[#D4B26E]/30 flex items-center justify-center text-[#7A5818] dark:text-[#D4B26E] text-lg shadow-xs">
+                  <CheckSquareOutlined />
                 </div>
-                <Text type="secondary" className="text-xs">
-                  {t('projectsSubtitle')}
-                </Text>
+              }
+              tooltipText={
+                isArabic
+                  ? `إجمالي المهام عبر جميع المشاريع (${completionRate}% مكتملة)`
+                  : `All tasks across your accessible projects (${completionRate}% done)`
+              }
+            />
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <KpiMetricCard
+              title={t('inProgress')}
+              count={metrics.inProgressCount}
+              subtitle={
+                <>
+                  <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8]" />
+                  <span>
+                    {metrics.todoCount} {t('pendingInQueue')}
+                  </span>
+                </>
+              }
+              icon={
+                <div className="w-11 h-11 rounded-lg bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 flex items-center justify-center text-[#1E4D8A] dark:text-[#8DB4E8] text-lg shadow-xs">
+                  <SyncOutlined spin={metrics.inProgressCount > 0} />
+                </div>
+              }
+              tooltipText={
+                isArabic
+                  ? 'المهام التي يتم العمل عليها حالياً'
+                  : 'Tasks actively being worked on'
+              }
+            />
+          </Col>
+
+          <Col xs={24} sm={12} lg={6}>
+            <KpiMetricCard
+              title={t('overdueTasks')}
+              count={metrics.overdueCount}
+              isOverdueAttention={metrics.overdueCount > 0}
+              subtitle={
+                <>
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      metrics.overdueCount > 0
+                        ? 'bg-[#9C2E1F] dark:bg-[#EE8A78]'
+                        : 'bg-[#235832] dark:bg-[#9CC5A1]'
+                    }`}
+                  />
+                  <span>
+                    {metrics.overdueCount > 0 ? t('requiresAttention') : t('deadlinesOnTrack')}
+                  </span>
+                </>
+              }
+              icon={
+                <div
+                  className={`w-11 h-11 rounded-lg flex items-center justify-center text-lg shadow-xs ${
+                    metrics.overdueCount > 0
+                      ? 'bg-[#FCE8E5] border border-[#EE8A78]/30 text-[#9C2E1F] dark:text-[#EE8A78]'
+                      : 'bg-[#E1EFE4] dark:bg-[#152618] border border-[#9CC5A1]/20 text-[#235832] dark:text-[#9CC5A1]'
+                  }`}
+                >
+                  {metrics.overdueCount > 0 ? <WarningOutlined /> : <CheckCircleOutlined />}
+                </div>
+              }
+              tooltipText={
+                metrics.overdueCount > 0
+                  ? isArabic
+                    ? 'تنبيه: مهام تجاوزت الموعد النهائي المحدد'
+                    : 'Attention: tasks overdue past deadline'
+                  : isArabic
+                  ? 'جميع المواعيد النهائية منتظمة ولا يوجد تأخير'
+                  : 'All task deadlines on track'
+              }
+            />
+          </Col>
+        </Row>
+
+        {/* Main Dashboard Section: Projects (8 cols) + Workspace Panel (4 cols) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-1">
+          {/* Left 8 Cols: Projects Management */}
+          <div className="lg:col-span-8 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
+              <div className="flex items-center gap-2">
+                <Title
+                  level={4}
+                  className="!mb-0 !text-base !font-bold text-[#1B1915] dark:text-[#EFE9DD] font-display"
+                >
+                  {t('yourAccessibleProjects')}
+                </Title>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] text-[#5A5348] dark:text-[#B5AC9C] tnum">
+                  {projects.length}
+                </span>
               </div>
-              <div className="flex items-center gap-2.5">
-                {projects.length > 0 && (
+              {projects.length > 0 && (
+                <Tooltip
+                  title={
+                    isArabic
+                      ? 'البحث عن طريق اسم المشروع أو الوصف'
+                      : 'Filter projects by name or description'
+                  }
+                >
                   <Input
                     placeholder={t('filterProjects')}
-                    prefix={<FilterOutlined className="text-slate-400 text-xs shrink-0" />}
+                    prefix={
+                      <FilterOutlined className="text-[#5A5348] dark:text-[#B5AC9C] text-xs shrink-0" />
+                    }
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     allowClear
-                    size="small"
-                    className="w-52 text-xs rounded-md"
+                    size="middle"
+                    className="w-full sm:w-60 text-xs rounded-md border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] text-[#1B1915] dark:text-[#EFE9DD]"
                   />
-                )}
-              </div>
+                </Tooltip>
+              )}
             </div>
 
             {filteredProjects.length === 0 ? (
-              <Card variant="outlined" className="text-center py-12 border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] shadow-none">
+              <Card
+                variant="outlined"
+                className="text-center py-12 border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-none"
+              >
                 <div className="max-w-sm mx-auto space-y-3">
-                  <div className="w-10 h-10 mx-auto rounded-lg bg-slate-100 dark:bg-[#161c26] flex items-center justify-center text-slate-400">
-                    <SearchOutlined />
+                  <div className="w-10 h-10 mx-auto rounded-lg bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] flex items-center justify-center text-[#7A5818] dark:text-[#D4B26E]">
+                    <SearchOutlined className="text-lg" />
                   </div>
                   <div className="space-y-1">
-                    <div className="font-semibold text-slate-700 dark:text-slate-200 text-sm">
+                    <div className="font-semibold text-[#1B1915] dark:text-[#EFE9DD] text-base">
                       {t('noMatchingProjects')}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-sm text-[#5A5348] dark:text-[#B5AC9C]">
                       {t('adjustSearch')}
                     </div>
                   </div>
-                  <Button size="small" onClick={() => setSearchQuery('')}>
+                  <Button
+                    size="middle"
+                    onClick={() => setSearchQuery('')}
+                    className="font-semibold border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD] text-sm"
+                  >
                     {t('clearFilter')}
                   </Button>
                 </div>
               </Card>
             ) : (
-              <Row gutter={[16, 16]}>
-                {filteredProjects.map((proj) => {
-                  const isOwner = proj.ownerId === user?.uid;
-                  return (
-                    <Col xs={24} md={12} lg={8} key={proj.id}>
-                      <Card
-                        hoverable
-                        variant="outlined"
-                        className="taskflow-card-hover h-full flex flex-col justify-between border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#111827] shadow-card-elevation dark:shadow-card-elevation-dark relative overflow-hidden"
-                        title={
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold truncate text-sm text-slate-900 dark:text-white">
-                              {proj.name}
-                            </span>
-                            <Tag
-                              color="default"
-                              icon={isOwner ? <CrownOutlined className="text-amber-500" /> : <UserOutlined />}
-                              className="m-0 text-[11px] border-slate-200/80 dark:border-[#1f293d] bg-slate-50 dark:bg-[#162032] text-slate-700 dark:text-slate-200"
-                            >
-                              {isOwner ? t('owner') : t('member')}
-                            </Tag>
-                          </div>
-                        }
-                        extra={
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedTeamProject(proj);
-                            }}
-                            className="text-xs text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1 font-mono tnum cursor-pointer transition-colors"
-                            title={t('teamRoster')}
-                          >
-                            <TeamOutlined /> {proj.memberIds.length}
-                          </button>
-                        }
-                      >
-                        <Paragraph
-                          ellipsis={{ rows: 2 }}
-                          className="text-xs text-slate-500 dark:text-slate-400 min-h-[36px] !mb-3 leading-relaxed"
-                        >
-                          {proj.description || t('noProjectDescription')}
-                        </Paragraph>
-
-                        {/* Member Avatars Stack - Clickable to open full roster modal */}
-                        <div
-                          className="flex items-center justify-between pb-3 cursor-pointer group/roster"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedTeamProject(proj);
-                          }}
-                          title={t('teamRoster')}
-                        >
-                          <div className="flex items-center -space-x-1.5 overflow-hidden">
-                            {proj.memberIds.slice(0, 5).map((mId) => {
-                              const info = proj.memberDetails?.[mId];
-                              const name = info?.displayName || mId;
-                              const isProjectOwner = mId === proj.ownerId;
-                              return (
-                                <Tooltip key={mId} title={`${name} (${isProjectOwner ? t('owner') : t('member')})`}>
-                                  <Avatar
-                                    size={22}
-                                    className={`text-[10px] border-2 border-white dark:border-[#0e131f] font-semibold ${
-                                      isProjectOwner ? 'bg-amber-600 text-white' : 'bg-slate-700 text-white'
-                                    }`}
-                                  >
-                                    {name.charAt(0).toUpperCase()}
-                                  </Avatar>
-                                </Tooltip>
-                              );
-                            })}
-                            {proj.memberIds.length > 5 && (
-                              <span className="text-[10px] ms-1.5 px-1.5 py-0.2 rounded font-mono font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 group-hover/roster:bg-amber-500/20 border border-amber-500/25 tnum transition-colors">
-                                +{proj.memberIds.length - 5}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[11px] text-slate-400 group-hover/roster:text-amber-600 dark:group-hover/roster:text-amber-400 font-mono tnum transition-colors">
-                            {proj.memberIds.length} {proj.memberIds.length === 1 ? t('memberSingular') : t('membersCount')}
-                          </span>
-                        </div>
-
-                        <div className="pt-3 border-t border-slate-100 dark:border-[#1b2336] flex items-center justify-between text-xs">
-                          <span className="text-slate-400 text-[11px] tnum">
-                            {t('updated')} {formatDateLocalized(proj.updatedAt)}
-                          </span>
-                          <Link href={`/projects/${proj.id}`}>
-                            <Button
-                              type="link"
-                              size="small"
-                              iconPlacement="end"
-                              icon={isRTL ? <ArrowLeftOutlined /> : <ArrowRightOutlined />}
-                              className="!text-amber-600 dark:!text-amber-400 font-bold !px-0 hover:underline"
-                            >
-                              {t('openKanban')}
-                            </Button>
-                          </Link>
-                        </div>
-                      </Card>
-                    </Col>
-                  );
-                })}
-              </Row>
+              <div
+                className={
+                  filteredProjects.length === 1
+                    ? 'space-y-4'
+                    : 'grid grid-cols-1 sm:grid-cols-2 gap-4'
+                }
+              >
+                {filteredProjects.map((proj) => (
+                  <ProjectCard
+                    key={proj.id}
+                    project={proj}
+                    currentUserId={user?.uid}
+                    isArabic={isArabic}
+                    isRTL={isRTL}
+                    onOpenTeam={setSelectedTeamProject}
+                    formatDateLocalized={formatDateLocalized}
+                    t={t}
+                  />
+                ))}
+              </div>
             )}
           </div>
+
+          {/* Right 4 Cols: Velocity & Workspace Intelligence Panel */}
+          <div className="lg:col-span-4 space-y-4">
+            {/* Sprint Velocity Card */}
+            <Card
+              variant="outlined"
+              className="tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark"
+              title={
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-sm text-[#1B1915] dark:text-[#EFE9DD] font-display">
+                    {t('sprintVelocity')}
+                  </span>
+                  <span className="font-bold text-sm text-[#7A5818] dark:text-[#D4B26E] font-mono tnum">
+                    {completionRate}%
+                  </span>
+                </div>
+              }
+            >
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-xs text-[#5A5348] dark:text-[#B5AC9C] mb-1.5 font-medium">
+                    <span>{t('progress')}</span>
+                    <span className="font-mono">
+                      {metrics.doneCount} / {metrics.totalTasks} {t('completed')}
+                    </span>
+                  </div>
+                  <Progress
+                    percent={completionRate}
+                    showInfo={false}
+                    strokeColor="#D4B26E"
+                    railColor="rgba(44, 40, 36, 0.2)"
+                    size={['100%', 7]}
+                  />
+                </div>
+
+                {/* Task breakdown list */}
+                <div className="pt-2 border-t border-[#DDDAD3] dark:border-[#2C2824] space-y-2 text-xs">
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-2 text-[#5A5348] dark:text-[#B5AC9C]">
+                      <span className="w-2 h-2 rounded-full bg-[#736B5E] dark:bg-[#9A9183]" />
+                      {t('statusTodo')}
+                    </span>
+                    <span className="font-bold font-mono text-[#1B1915] dark:text-[#EFE9DD]">
+                      {metrics.todoCount}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-2 text-[#5A5348] dark:text-[#B5AC9C]">
+                      <span className="w-2 h-2 rounded-full bg-[#1E4D8A] dark:bg-[#8DB4E8]" />
+                      {t('statusInProgress')}
+                    </span>
+                    <span className="font-bold font-mono text-[#1E4D8A] dark:text-[#8DB4E8]">
+                      {metrics.inProgressCount}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-2 text-[#5A5348] dark:text-[#B5AC9C]">
+                      <span className="w-2 h-2 rounded-full bg-[#235832] dark:bg-[#9CC5A1]" />
+                      {t('statusDone')}
+                    </span>
+                    <span className="font-bold font-mono text-[#235832] dark:text-[#9CC5A1]">
+                      {metrics.doneCount}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-1">
+                    <span className="flex items-center gap-2 text-[#5A5348] dark:text-[#B5AC9C]">
+                      <span className="w-2 h-2 rounded-full bg-[#9C2E1F] dark:bg-[#EE8A78]" />
+                      {t('overdueTasks')}
+                    </span>
+                    <span
+                      className={`font-bold font-mono ${
+                        metrics.overdueCount > 0
+                          ? 'text-[#9C2E1F] dark:text-[#EE8A78]'
+                          : 'text-[#5A5348] dark:text-[#B5AC9C]'
+                      }`}
+                    >
+                      {metrics.overdueCount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
-      )}
+      </div>
 
       <TeamRosterModal
         open={Boolean(selectedTeamProject)}

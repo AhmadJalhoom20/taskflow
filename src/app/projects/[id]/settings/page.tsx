@@ -1,10 +1,10 @@
 'use client';
 
+// ============================================================================
+// 1. IMPORTS
+// ============================================================================
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { DataService } from '@/services/dataStore';
-import { Project } from '@/types';
 import Link from 'next/link';
 import {
   SettingOutlined,
@@ -16,7 +16,7 @@ import {
   MailOutlined,
   ArrowLeftOutlined,
   ArrowRightOutlined,
-  UserOutlined,
+  CrownOutlined,
 } from '@ant-design/icons';
 import {
   Card,
@@ -30,14 +30,282 @@ import {
   Alert,
   Modal,
   Typography,
-  message,
-  Spin,
+  App,
 } from 'antd';
-import { useLanguage } from '@/context/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
+import { useLanguage, TranslationKey } from '@/context/LanguageContext';
+import { DataService } from '@/services/dataStore';
+import { Project } from '@/types';
 
 const { Title, Text, Paragraph } = Typography;
 
+// ============================================================================
+// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// ============================================================================
+// Edit validation rules, character limits, and visual design tokens here.
+const CONFIG = {
+  minProjectNameLength: 3,
+  maxProjectNameLength: 80,
+  maxDescriptionLength: 1000,
+} as const;
+
+const STYLES = {
+  container: 'max-w-5xl mx-auto space-y-6 py-4',
+  backButton: '!px-0 mb-2 !text-[#7A5818] dark:!text-[#D4B26E] font-semibold',
+  pageTitle: '!mb-0 !text-xl !font-bold font-display text-[#1B1915] dark:text-[#EFE9DD]',
+  pageSubtitle: 'text-xs !text-[#5A5348] dark:!text-[#B5AC9C]',
+  tactileCard:
+    'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark',
+  inputBase:
+    'rounded text-sm bg-white dark:bg-[#1C1A17] border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD]',
+  primarySaveButton:
+    'tactile-btn !bg-[#7A5818] dark:!bg-[#D4B26E] hover:!bg-[#5e4310] dark:hover:!bg-[#e5c583] !border-[#7A5818] dark:!border-[#D4B26E] !text-white dark:!text-[#1A1408] font-bold px-6 shadow-xs rounded text-sm',
+  primaryAddButton:
+    'tactile-btn !bg-[#7A5818] dark:!bg-[#D4B26E] hover:!bg-[#5e4310] dark:hover:!bg-[#e5c583] !border-[#7A5818] dark:!border-[#D4B26E] !text-white dark:!text-[#1A1408] font-bold rounded text-sm',
+  dangerCard:
+    'border-rose-300/80 dark:border-rose-900/60 bg-rose-50/20 dark:bg-rose-950/10 rounded-xl',
+  ownerRbacTag:
+    'm-0 text-xs font-mono font-bold uppercase border-[#7A5818]/30 dark:border-[#D4B26E]/30 bg-[#7A5818]/10 dark:bg-[#D4B26E]/10 text-[#7A5818] dark:text-[#D4B26E] px-2 py-0.5',
+} as const;
+
+// ============================================================================
+// 3. TYPES & INTERFACES
+// ============================================================================
+interface GeneralSettingsFormValues {
+  name: string;
+  description?: string;
+}
+
+interface AddMemberFormValues {
+  email: string;
+}
+
+// ============================================================================
+// 4. HELPER FUNCTIONS & HOOKS
+// ============================================================================
+function isNonEmptyString(val?: string | null): boolean {
+  return typeof val === 'string' && val.trim().length > 0;
+}
+
+// ============================================================================
+// 5. SUB-COMPONENTS
+// ============================================================================
+interface AccessDeniedCardProps {
+  projectId: string;
+  isRTL: boolean;
+}
+
+function AccessDeniedCard({ projectId, isRTL }: AccessDeniedCardProps) {
+  return (
+    <Card className="max-w-md mx-auto text-center py-12 mt-8 border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211]">
+      <ExclamationCircleOutlined className="text-3xl text-rose-500 mb-3" />
+      <Title level={4} className="font-display !text-[#1B1915] dark:!text-[#EFE9DD]">
+        {isRTL ? 'تم رفض الوصول' : 'Access Denied'}
+      </Title>
+      <Text type="secondary" className="block mb-6 !text-[#5A5348] dark:!text-[#B5AC9C]">
+        {isRTL
+          ? 'مالك المشروع فقط يملك صلاحية تعديل الإعدادات وإدارة الأعضاء.'
+          : 'Only the Project Owner has permission to manage project settings and membership.'}
+      </Text>
+      <Link href={`/projects/${projectId}`}>
+        <Button
+          type="primary"
+          icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />}
+          className="!bg-[#7A5818] dark:!bg-[#D4B26E] !border-[#7A5818] dark:!border-[#D4B26E] !text-white dark:!text-[#1A1408] font-bold"
+        >
+          {isRTL ? 'العودة للمشروع' : 'Return to Project'}
+        </Button>
+      </Link>
+    </Card>
+  );
+}
+
+function SettingsLoadingSkeleton() {
+  return (
+    <div className="max-w-3xl mx-auto space-y-6 py-4 animate-pulse">
+      <div className="space-y-2">
+        <div className="h-4 w-32 bg-[#EDECE8] dark:bg-[#1C1A17] rounded" />
+        <div className="h-8 w-56 bg-[#EDECE8] dark:bg-[#1C1A17] rounded-lg" />
+      </div>
+      <Card
+        variant="outlined"
+        className="border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] p-4 space-y-4"
+      >
+        <div className="h-4 w-40 bg-[#EDECE8] dark:bg-[#1C1A17] rounded mb-3" />
+        <div className="h-10 w-full bg-[#EDECE8] dark:bg-[#1C1A17] rounded-lg" />
+        <div className="h-20 w-full bg-[#EDECE8] dark:bg-[#1C1A17] rounded-lg" />
+      </Card>
+    </div>
+  );
+}
+
+interface MemberRowProps {
+  memberId: string;
+  project: Project;
+  currentUserId?: string;
+  t: (key: TranslationKey) => string;
+  onRemoveMember: (id: string) => void;
+}
+
+function MemberRow({ memberId, project, currentUserId, t, onRemoveMember }: MemberRowProps) {
+  const member = project.memberDetails?.[memberId];
+  const isProjectOwner = memberId === project.ownerId;
+  const isCurrentUser = memberId === currentUserId;
+
+  return (
+    <List.Item
+      className="py-3 px-2 rounded hover:bg-[#EDECE8]/50 dark:hover:bg-[#1C1A17] transition-colors"
+      actions={[
+        isProjectOwner ? (
+          <Tag key="owner" className={STYLES.ownerRbacTag}>
+            {t('owner')}
+          </Tag>
+        ) : (
+          <Popconfirm
+            key="remove"
+            title={t('removeMemberConfirmTitle')}
+            description={t('removeMemberConfirmDesc')}
+            onConfirm={() => onRemoveMember(memberId)}
+            okText={t('removeAction')}
+            cancelText={t('cancel')}
+            okButtonProps={{ danger: true }}
+          >
+            <Button
+              type="text"
+              danger
+              size="middle"
+              icon={<UserDeleteOutlined />}
+              className="text-sm"
+            >
+              {t('removeMemberAction')}
+            </Button>
+          </Popconfirm>
+        ),
+      ]}
+    >
+      <List.Item.Meta
+        avatar={
+          <Avatar
+            size={36}
+            className={`font-bold text-sm ${
+              isProjectOwner
+                ? 'bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408]'
+                : 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD]'
+            }`}
+          >
+            {member?.displayName?.charAt(0).toUpperCase() || 'U'}
+          </Avatar>
+        }
+        title={
+          <div className="flex items-center gap-2 text-sm">
+            <span className="font-bold text-[#1B1915] dark:text-[#EFE9DD]">
+              {member?.displayName || memberId}
+            </span>
+            {isCurrentUser && (
+              <span className="text-xs font-mono text-[#7A5818] dark:text-[#D4B26E] font-semibold">
+                ({t('youIndicator')})
+              </span>
+            )}
+          </div>
+        }
+        description={
+          <span className="font-mono text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C]">
+            {member?.email || 'Registered User'}
+          </span>
+        }
+      />
+    </List.Item>
+  );
+}
+
+interface DeleteProjectModalProps {
+  isOpen: boolean;
+  projectName: string;
+  confirmName: string;
+  isDeleting: boolean;
+  t: (key: TranslationKey) => string;
+  onConfirmNameChange: (val: string) => void;
+  onCancel: () => void;
+  onDelete: () => void;
+}
+
+function DeleteProjectModal({
+  isOpen,
+  projectName,
+  confirmName,
+  isDeleting,
+  t,
+  onConfirmNameChange,
+  onCancel,
+  onDelete,
+}: DeleteProjectModalProps) {
+  const isMatch = confirmName.trim() === projectName.trim();
+
+  return (
+    <Modal
+      open={isOpen}
+      onCancel={onCancel}
+      footer={null}
+      title={
+        <div className="flex items-center gap-2 text-rose-600 font-bold text-base pb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
+          <ExclamationCircleOutlined />
+          <span>{t('confirmDeleteModalTitle')}</span>
+        </div>
+      }
+    >
+      <div className="py-4 space-y-4">
+        <Alert
+          type="error"
+          showIcon
+          title={t('irreversibleActionNotice')}
+          description={t('cascadeNoticeDetails')}
+          className="text-xs rounded-md"
+        />
+
+        <div className="space-y-2 text-xs">
+          <p className="text-[#1B1915] dark:text-[#EFE9DD]">
+            {t('typeToConfirmPrompt')}:{' '}
+            <strong className="font-mono text-[#7A5818] dark:text-[#D4B26E] select-all">
+              {projectName}
+            </strong>
+          </p>
+          <Input
+            value={confirmName}
+            onChange={(e) => onConfirmNameChange(e.target.value)}
+            placeholder={projectName}
+            size="large"
+            className="font-mono text-xs rounded bg-white dark:bg-[#1C1A17] border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD]"
+          />
+        </div>
+
+        <div className="pt-2 flex justify-end gap-2">
+          <Button
+            onClick={onCancel}
+            className="rounded font-semibold border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD]"
+          >
+            {t('cancel')}
+          </Button>
+          <Button
+            danger
+            type="primary"
+            loading={isDeleting}
+            disabled={!isMatch}
+            onClick={onDelete}
+            className="font-bold rounded"
+          >
+            {t('permanentlyDeleteProject')}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ============================================================================
+// 6. MAIN COMPONENT
+// ============================================================================
 export default function ProjectSettingsPage() {
+  const { message } = App.useApp();
   const { t, isRTL } = useLanguage();
   const params = useParams();
   const projectId = params?.id as string;
@@ -47,21 +315,18 @@ export default function ProjectSettingsPage() {
   const [projectForm] = Form.useForm();
   const [memberForm] = Form.useForm();
 
+  // --- Component State ---
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // General Update
   const [isUpdating, setIsUpdating] = useState(false);
-
-  // Add Member
   const [isAddingMember, setIsAddingMember] = useState(false);
-
-  // Delete Project Modal
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [confirmDeleteName, setConfirmDeleteName] = useState('');
   const [isDeletingProject, setIsDeletingProject] = useState(false);
 
+  // --- Initial Data Loading ---
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -73,7 +338,7 @@ export default function ProjectSettingsPage() {
     }
   }, [user, authLoading, projectId]);
 
-  const loadProject = async () => {
+  async function loadProject() {
     if (!user) return;
     setLoading(true);
     setError(null);
@@ -95,8 +360,9 @@ export default function ProjectSettingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
+  // --- Synchronize Loaded Project with Form ---
   useEffect(() => {
     if (project) {
       projectForm.setFieldsValue({
@@ -106,7 +372,8 @@ export default function ProjectSettingsPage() {
     }
   }, [project, projectForm]);
 
-  const handleUpdateGeneral = async (values: any) => {
+  // --- Action Handlers ---
+  const handleUpdateGeneral = async (values: GeneralSettingsFormValues) => {
     if (!user || !project) return;
     const trimmedName = values.name.trim();
 
@@ -127,7 +394,7 @@ export default function ProjectSettingsPage() {
     }
   };
 
-  const handleAddMember = async (values: any) => {
+  const handleAddMember = async (values: AddMemberFormValues) => {
     if (!user || !project) return;
     const email = values.email.trim();
 
@@ -178,59 +445,37 @@ export default function ProjectSettingsPage() {
     }
   };
 
+  // --- Guard Clauses ---
   if (loading || authLoading) {
-    return (
-      <div className="max-w-3xl mx-auto space-y-6 py-4 animate-pulse">
-        <div className="space-y-2">
-          <div className="h-4 w-32 bg-slate-200 dark:bg-[#161c26] rounded" />
-          <div className="h-8 w-56 bg-slate-300 dark:bg-[#1e2636] rounded-lg" />
-        </div>
-        <Card variant="outlined" className="border-slate-200 dark:border-[#1e2430] bg-white dark:bg-[#12161f] p-4 space-y-4">
-          <div className="h-4 w-40 bg-slate-200 dark:bg-[#1a2230] rounded mb-3" />
-          <div className="h-10 w-full bg-slate-100 dark:bg-[#161c26] rounded-lg" />
-          <div className="h-20 w-full bg-slate-100 dark:bg-[#161c26] rounded-lg" />
-        </Card>
-      </div>
-    );
+    return <SettingsLoadingSkeleton />;
   }
 
   if (error && error.includes('UNAUTHORIZED')) {
-    return (
-      <Card className="max-w-md mx-auto text-center py-12 mt-8">
-        <ExclamationCircleOutlined className="text-3xl text-red-500 mb-3" />
-        <Title level={4}>{isRTL ? 'تم رفض الوصول' : 'Access Denied'}</Title>
-        <Text type="secondary" className="block mb-6">
-          {isRTL
-            ? 'مالك المشروع فقط يملك صلاحية تعديل الإعدادات وإدارة الأعضاء.'
-            : 'Only the Project Owner has permission to manage project settings and membership.'}
-        </Text>
-        <Link href={`/projects/${projectId}`}>
-          <Button type="primary" icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />}>
-            {isRTL ? 'العودة للمشروع' : 'Return to Project'}
-          </Button>
-        </Link>
-      </Card>
-    );
+    return <AccessDeniedCard projectId={projectId} isRTL={isRTL} />;
   }
 
   if (!project) return null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 py-4">
-      {/* Back Link & Header */}
+    <div className={STYLES.container}>
+      {/* Header and Back Link */}
       <div>
         <Link href={`/projects/${project.id}`}>
-          <Button type="link" icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />} className="!px-0 mb-2">
+          <Button
+            type="link"
+            icon={isRTL ? <ArrowRightOutlined /> : <ArrowLeftOutlined />}
+            className={STYLES.backButton}
+          >
             {t('backToProject')} {project.name}
           </Button>
         </Link>
         <div className="flex items-center gap-2.5">
-          <SettingOutlined className="text-2xl text-amber-500" />
+          <SettingOutlined className="text-2xl text-[#7A5818] dark:text-[#D4B26E]" />
           <div>
-            <Title level={2} className="!mb-0 !text-2xl !font-bold">
+            <Title level={2} className={STYLES.pageTitle}>
               {t('projectSettingsTitle')}
             </Title>
-            <Text type="secondary" className="text-xs">
+            <Text type="secondary" className={STYLES.pageSubtitle}>
               {t('projectSettingsSubtitle')}
             </Text>
           </div>
@@ -239,33 +484,68 @@ export default function ProjectSettingsPage() {
 
       {/* General Settings */}
       <Card
-        title={<span className="font-bold text-slate-900 dark:text-slate-100">{t('generalInformation')}</span>}
+        title={
+          <span className="font-bold text-[#1B1915] dark:text-[#EFE9DD] font-display text-base">
+            {t('generalInformation')}
+          </span>
+        }
         variant="outlined"
-        className="border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none"
+        className={STYLES.tactileCard}
       >
-        <Form form={projectForm} layout="vertical" onFinish={handleUpdateGeneral} requiredMark="optional">
+        <Form
+          form={projectForm}
+          layout="vertical"
+          onFinish={handleUpdateGeneral}
+          requiredMark="optional"
+        >
           <Form.Item
             name="name"
-            label={<span className="text-xs font-medium text-slate-700 dark:text-slate-300">{t('projectNameLabel')}</span>}
+            label={
+              <span className="text-sm font-semibold text-[#1B1915] dark:text-[#EFE9DD]">
+                {t('projectNameLabel')}
+              </span>
+            }
             rules={[
               { required: true, message: 'Please enter a project name' },
-              { min: 3, message: 'Minimum 3 characters' },
-              { max: 80, message: 'Maximum 80 characters' },
+              { min: CONFIG.minProjectNameLength, message: 'Minimum 3 characters' },
+              { max: CONFIG.maxProjectNameLength, message: 'Maximum 80 characters' },
             ]}
           >
-            <Input showCount maxLength={80} size="large" dir="auto" />
+            <Input
+              showCount
+              maxLength={CONFIG.maxProjectNameLength}
+              size="large"
+              dir="auto"
+              className={STYLES.inputBase}
+            />
           </Form.Item>
 
           <Form.Item
             name="description"
-            label={<span className="text-xs font-medium text-slate-700 dark:text-slate-300">{t('objectivesScopeLabel')}</span>}
-            rules={[{ max: 1000, message: 'Max 1000 characters' }]}
+            label={
+              <span className="text-sm font-semibold text-[#1B1915] dark:text-[#EFE9DD]">
+                {t('objectivesScopeLabel')}
+              </span>
+            }
+            rules={[{ max: CONFIG.maxDescriptionLength, message: 'Max 1000 characters' }]}
           >
-            <Input.TextArea showCount maxLength={1000} rows={3} dir="auto" />
+            <Input.TextArea
+              showCount
+              maxLength={CONFIG.maxDescriptionLength}
+              rows={3}
+              dir="auto"
+              className={STYLES.inputBase}
+            />
           </Form.Item>
 
           <div className="flex justify-end">
-            <Button type="primary" htmlType="submit" loading={isUpdating} className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold px-6 shadow-sm shadow-amber-500/20">
+            <Button
+              type="primary"
+              size="middle"
+              htmlType="submit"
+              loading={isUpdating}
+              className={STYLES.primarySaveButton}
+            >
               {t('saveProjectSettings')}
             </Button>
           </div>
@@ -276,156 +556,110 @@ export default function ProjectSettingsPage() {
       <Card
         title={
           <div className="flex items-center gap-2">
-            <TeamOutlined className="text-amber-500" />
-            <span className="font-bold text-slate-900 dark:text-slate-100">{t('teamMembersSection')} ({project.memberIds.length})</span>
+            <TeamOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
+            <span className="font-bold text-[#1B1915] dark:text-[#EFE9DD] font-display text-base">
+              {t('teamMembersSection')} ({project.memberIds.length})
+            </span>
           </div>
         }
         variant="outlined"
-        className="border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-none"
+        className={STYLES.tactileCard}
       >
-        <Paragraph className="text-xs text-slate-500 !mb-4">
+        <Paragraph className="text-sm !text-[#5A5348] dark:!text-[#B5AC9C] !mb-4 leading-relaxed">
           {t('addMemberDesc')}
         </Paragraph>
 
         {/* Add Member Form */}
-        <Form form={memberForm} layout="inline" onFinish={handleAddMember} className="mb-6">
+        <Form
+          form={memberForm}
+          layout="inline"
+          onFinish={handleAddMember}
+          className="mb-6 flex gap-2"
+        >
           <Form.Item
             name="email"
-            className="flex-1"
+            className="flex-1 !me-0"
             rules={[
               { required: true, message: 'Enter member email' },
               { type: 'email', message: 'Enter a valid email' },
             ]}
           >
             <Input
-              prefix={<MailOutlined className="text-slate-400" />}
-              placeholder={t('memberEmailPlaceholder')}
+              size="middle"
+              prefix={<MailOutlined className="text-[#5A5348] dark:text-[#B5AC9C] me-2" />}
+              placeholder="engineer@company.com"
+              className={STYLES.inputBase}
             />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<UserAddOutlined />} loading={isAddingMember} className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold shadow-sm shadow-amber-500/20">
-              {t('addMemberBtn')}
+          <Form.Item className="!me-0">
+            <Button
+              type="primary"
+              size="middle"
+              htmlType="submit"
+              icon={<UserAddOutlined />}
+              loading={isAddingMember}
+              className={STYLES.primaryAddButton}
+            >
+              {t('addMemberButton')}
             </Button>
           </Form.Item>
         </Form>
 
-        {/* Member Roster List */}
+        {/* Members Roster List */}
         <List
           itemLayout="horizontal"
           dataSource={project.memberIds}
-          renderItem={(mId) => {
-            const member = project.memberDetails?.[mId];
-            const isOwnerMember = mId === project.ownerId;
-
-            return (
-              <List.Item
-                actions={[
-                  !isOwnerMember ? (
-                    <Popconfirm
-                      key="remove"
-                      title={t('removeMemberConfirmTitle')}
-                      description={t('removeMemberConfirmDesc')}
-                      onConfirm={() => handleRemoveMember(mId)}
-                      okText={t('yesRemove')}
-                      cancelText={t('cancel')}
-                      okButtonProps={{ danger: true }}
-                    >
-                      <Button type="text" danger icon={<UserDeleteOutlined />} size="small">
-                        {t('deleteAction')}
-                      </Button>
-                    </Popconfirm>
-                  ) : (
-                    <Tag key="owner-badge" className="m-0 text-[11px] border-slate-200 dark:border-[#1e2430] bg-slate-50 dark:bg-[#171c26] text-amber-600 dark:text-amber-400">
-                      {t('owner')}
-                    </Tag>
-                  ),
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <Avatar icon={<UserOutlined />} className={isOwnerMember ? 'bg-amber-600' : 'bg-slate-400'}>
-                      {member?.displayName?.charAt(0).toUpperCase()}
-                    </Avatar>
-                  }
-                  title={
-                    <span dir="auto" className="font-semibold text-xs sm:text-sm">
-                      {member?.displayName || mId}
-                    </span>
-                  }
-                  description={
-                    <span className="text-xs text-slate-400">
-                      {member?.email || 'Registered User'}
-                    </span>
-                  }
-                />
-              </List.Item>
-            );
-          }}
+          className="divide-y divide-[#DDDAD3] dark:divide-[#2C2824]"
+          renderItem={(mId) => (
+            <MemberRow
+              key={mId}
+              memberId={mId}
+              project={project}
+              currentUserId={user?.uid}
+              t={t}
+              onRemoveMember={handleRemoveMember}
+            />
+          )}
         />
       </Card>
 
-      {/* Danger Zone: Project Deletion */}
-      <Card
-        title={
-          <span className="text-rose-600 font-bold flex items-center gap-2">
-            <DeleteOutlined /> {t('dangerZone')}
-          </span>
-        }
-        variant="outlined"
-        className="border-rose-300 dark:border-rose-900/40 bg-rose-50/20 dark:bg-rose-950/10 shadow-none"
-      >
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-              {t('deleteThisProject')}
-            </div>
-            <div className="text-xs text-slate-500">
-              {t('deleteProjectWarning')}
-            </div>
+      {/* Danger Zone: Cascade Project Deletion */}
+      <Card variant="outlined" className={STYLES.dangerCard}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h4 className="font-bold text-rose-700 dark:text-rose-400 text-sm">
+              {t('dangerZoneTitle')}
+            </h4>
+            <p className="text-xs text-[#5A5348] dark:text-[#B5AC9C] max-w-lg leading-relaxed">
+              {t('dangerZoneDesc')}
+            </p>
           </div>
-          <Button danger type="primary" onClick={() => setIsDeleteDialogOpen(true)}>
-            {t('deleteProjectBtn')}
+          <Button
+            danger
+            type="primary"
+            icon={<DeleteOutlined />}
+            onClick={() => setIsDeleteDialogOpen(true)}
+            className="tactile-btn font-bold shrink-0 rounded"
+          >
+            {t('deleteProjectAction')}
           </Button>
         </div>
       </Card>
 
       {/* Delete Confirmation Modal */}
-      <Modal
-        title={t('confirmDeletionTitle')}
-        open={isDeleteDialogOpen}
+      <DeleteProjectModal
+        isOpen={isDeleteDialogOpen}
+        projectName={project.name}
+        confirmName={confirmDeleteName}
+        isDeleting={isDeletingProject}
+        t={t}
+        onConfirmNameChange={setConfirmDeleteName}
         onCancel={() => {
           setIsDeleteDialogOpen(false);
           setConfirmDeleteName('');
         }}
-        footer={[
-          <Button key="cancel" onClick={() => setIsDeleteDialogOpen(false)}>
-            {t('cancel')}
-          </Button>,
-          <Button
-            key="delete"
-            danger
-            type="primary"
-            loading={isDeletingProject}
-            disabled={confirmDeleteName.trim() !== project.name.trim()}
-            onClick={handleDeleteProject}
-          >
-            {t('confirmDeleteBtn')}
-          </Button>,
-        ]}
-      >
-        <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
-          {t('confirmDeletionPrompt')}{' '}
-          <strong dir="auto" className="text-slate-900 dark:white font-mono select-all">
-            &quot;{project.name}&quot;
-          </strong>
-        </p>
-        <Input
-          placeholder={t('typeProjectNamePlaceholder')}
-          value={confirmDeleteName}
-          onChange={(e) => setConfirmDeleteName(e.target.value)}
-          dir="auto"
-        />
-      </Modal>
+        onDelete={handleDeleteProject}
+      />
     </div>
   );
 }

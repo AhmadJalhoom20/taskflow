@@ -3,46 +3,171 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f8fa;
-  --foreground: #090d16;
-  --surface: #ffffff;
-  --surface-muted: #f0f3f8;
-  --border: #e2e6ee;
-  --border-subtle: #edf0f6;
-  --accent: #d97706;
-  --accent-hover: #b45309;
-  
-  /* WCAG AA Calibrated Text Tokens */
-  --text-primary: #090d16;
-  --text-secondary: #475569;  /* 4.58:1 contrast on white */
-  --text-tertiary: #64748b;   /* 4.5:1 on light gray */
+  /* Taskora Design System — Light (Pearl & Bronze) */
+  --bg: #F4F4F2;
+  --surface: #FFFFFF;
+  --surface-2: #EDECE8;
+  --surface-overlay: #FFFFFF;
+  --surface-hover: #E8E6E0;
+  --line: #DDDAD3;
+  --line-strong: #C4C0B6;
+  --control-border: #736B5E;
+
+  --text: #1B1915;
+  --text-2: #5A5348;
+  --text-3: #736B5E;
+
+  /* Accent (Bronze) */
+  --accent: #7A5818;
+  --accent-hover: #5E420E;
+  --accent-subtle: #F7F2E8;
+  --on-accent: #FFFFFF;
+
+  /* Sidebar & Header */
+  --sidebar-bg: #11100E;
+  --sidebar-text: #EFE9DD;
+  --sidebar-active-bg: #1C1A17;
+  --sidebar-active-text: #D4B26E;
+
+  /* Status Tokens */
+  --st-todo-fg: #5A5348;
+  --st-todo-bg: #EDECE8;
+  --st-progress-fg: #1E4D8A;
+  --st-progress-bg: #E3EDF8;
+  --st-done-fg: #235832;
+  --st-done-bg: #E1EFE4;
+  --st-overdue-fg: #9C2E1F;
+  --st-overdue-bg: #FCE8E5;
+
+  /* Priority Tokens */
+  --pr-low-fg: #5A5348;
+  --pr-medium-fg: #1E4D8A;
+  --pr-high-fg: #9C2E1F;
+
+  /* Physical Interaction Springs */
+  --ease-tactile: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 html.dark {
-  --background: #080b11;
-  --foreground: #f8fafc;
-  --surface: #0e131f;
-  --surface-muted: #141a29;
-  --border: #1b2336;
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --accent: #f59e0b;
-  --accent-hover: #fbbf24;
+  /* Taskora Design System — Dark (Obsidian Ledger) */
+  --bg: #0C0B0A;
+  --surface: #141211;
+  --surface-2: #1C1A17;
+  --surface-overlay: #26231F;
+  --surface-hover: #1E1C19;
+  --line: #2C2824;
+  --line-strong: #3A352F;
+  --control-border: #736B5E;
 
-  /* WCAG AA Calibrated Dark Tokens */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;  /* 5.5:1 contrast on #0e131f */
-  --text-tertiary: #cbd5e1;
+  --text: #EFE9DD;
+  --text-2: #B5AC9C;
+  --text-3: #9A9183;
+
+  /* Accent (Champagne Gold) */
+  --accent: #D4B26E;
+  --accent-hover: #E2C88E;
+  --accent-subtle: rgba(212, 178, 110, 0.12);
+  --on-accent: #1A1408;
+
+  /* Sidebar & Header */
+  --sidebar-bg: #11100E;
+  --sidebar-text: #EFE9DD;
+  --sidebar-active-bg: #1C1A17;
+  --sidebar-active-text: #D4B26E;
+
+  /* Status Tokens */
+  --st-todo-fg: #B3AC9E;
+  --st-todo-bg: #26231F;
+  --st-progress-fg: #8DB4E8;
+  --st-progress-bg: #142136;
+  --st-done-fg: #9CC5A1;
+  --st-done-bg: #152618;
+  --st-overdue-fg: #EE8A78;
+  --st-overdue-bg: #331915;
+
+  /* Priority Tokens */
+  --pr-low-fg: #B5AC9C;
+  --pr-medium-fg: #8DB4E8;
+  --pr-high-fg: #EE8A78;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
+  font-size: 16.5px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   caret-color: var(--accent);
+}
+
+/* Typography Scale Enhancement — Comfort & High Legibility */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+html[dir='rtl'] {
+  font-size: 16.5px;
+}
+
+/* Eliminate microscopic sub-12px text across the interface */
+.text-\[9px\] {
+  font-size: 0.75rem !important;
+}
+.text-\[10px\] {
+  font-size: 0.8125rem !important;
+}
+.text-\[11px\] {
+  font-size: 0.875rem !important;
+}
+
+/* Enhance text-xs for readable UI metadata */
+.text-xs {
+  font-size: 0.875rem !important;
+  line-height: 1.45;
+}
+
+/* Enhance text-sm */
+.text-sm {
+  font-size: 0.9375rem !important;
+  line-height: 1.5;
+}
+
+/* Enhance text-base */
+.text-base {
+  font-size: 1rem !important;
+  line-height: 1.55;
+}
+
+/* In Arabic, glyphs are naturally smaller optically, so give them extra optical scaling */
+html[dir='rtl'] .text-xs {
+  font-size: 0.9rem !important;
+  line-height: 1.55 !important;
+}
+
+html[dir='rtl'] .text-sm {
+  font-size: 0.975rem !important;
+  line-height: 1.55 !important;
+}
+
+html[dir='rtl'] .text-base {
+  font-size: 1.05rem !important;
+  line-height: 1.6 !important;
+}
+
+html[dir='rtl'] .text-\[10px\],
+html[dir='rtl'] .text-\[11px\] {
+  font-size: 0.875rem !important;
+}
+
+/* Headings font — Clean Modern Sans-Serif (Linear SaaS standard) */
+h1, h2, h3, .font-display {
+  font-family: 'Inter', 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'lining-nums', 'tabular-nums';
 }
 
 /* Bilingual Arabic Typography & Diacritic Breathing Room */
@@ -58,44 +183,47 @@ html[dir='rtl'] .ant-dropdown,
 html[dir='rtl'] .ant-tag,
 html[dir='rtl'] .ant-badge,
 html[dir='rtl'] .ant-segmented,
-html[dir='rtl'] .ant-table {
-  font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  letter-spacing: normal;
-  line-height: 1.6; /* Prevents vertical clipping of Arabic diacritics */
+html[dir='rtl'] .ant-table,
+html[dir='rtl'] .ant-drawer {
+  font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: normal !important;
+  line-height: 1.72; /* Comfortable ascender/descender clearance for Arabic */
 }
 
-/* Logical Affix Wrapper Alignment for RTL */
-html[dir='rtl'] .ant-input-affix-wrapper .ant-input-prefix {
-  margin-inline-end: 8px;
-  margin-inline-start: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+html[dir='rtl'] h1,
+html[dir='rtl'] h2,
+html[dir='rtl'] h3,
+html[dir='rtl'] .font-display {
+  font-family: 'IBM Plex Sans Arabic', 'Cairo', system-ui, -apple-system, sans-serif !important;
 }
 
-html[dir='rtl'] .ant-input-affix-wrapper .ant-input {
-  text-align: start;
-}
-
-::selection {
-  background-color: #f59e0b;
-  color: #080b11;
-}
-
-html.dark ::selection {
-  background-color: #f59e0b;
-  color: #080b11;
+/* Absolute elimination of disjointed cursive Arabic letters caused by letter-spacing or tracking */
+html[dir='rtl'] *,
+html[dir='rtl'] *::before,
+html[dir='rtl'] *::after,
+html[dir='rtl'] .tracking-tight,
+html[dir='rtl'] .tracking-wide,
+html[dir='rtl'] .tracking-wider,
+html[dir='rtl'] .tracking-widest {
+  letter-spacing: normal !important;
 }
 
 /* Tabular figures for dense metrics and task counts */
-.tnum {
-  font-variant-numeric: tabular-nums;
+.tnum, .num {
+  font-variant-numeric: lining-nums tabular-nums;
+  font-feature-settings: 'tnum', 'lnum';
 }
 
-/* Precision WCAG Focus Ring (Tactile Amber) */
+/* Monospace Badge Utility */
+.font-mono-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-feature-settings: 'tnum', 'zero';
+}
+
+/* Precision WCAG Focus Ring */
 *:focus-visible {
-  outline: 2px solid #f59e0b;
-  outline-offset: 1px;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* Minimalist Engineered Scrollbar */
@@ -109,37 +237,48 @@ html.dark ::selection {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.25);
-  border-radius: 4px;
+  background: var(--line-strong);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.45);
+  background: var(--control-border);
 }
-
-/* Clean Card Hover State */
-.taskflow-card-hover {
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.taskflow-card-hover:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
-}
-
-html.dark .taskflow-card-hover:hover {
-  border-color: #334155;
-  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.5);
-}
-
 
 /* Fine Hairline Border */
 .hairline-border {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--line);
 }
 
-html.dark .hairline-border {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.hairline-border-strong {
+  border: 1px solid var(--line-strong);
+}
+
+/* Tactile Micro-Interactions */
+.tactile-btn {
+  transition: transform 140ms var(--ease-tactile), box-shadow 140ms var(--ease-tactile), background-color 140ms ease, border-color 140ms ease;
+}
+
+.tactile-btn:hover {
+  transform: translateY(-1px);
+}
+
+.tactile-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.tactile-card {
+  transition: transform 160ms var(--ease-tactile), border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.tactile-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .tactile-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.6);
 }
 
 /* Priority Indicator Micro-dots */
@@ -150,37 +289,28 @@ html.dark .hairline-border {
   display: inline-block;
   flex-shrink: 0;
 }
-.priority-dot-urgent,
+.priority-dot-urgent {
+  background-color: var(--st-overdue-fg);
+  box-shadow: 0 0 0 2px rgba(238, 138, 120, 0.25);
+}
 .priority-dot-high {
-  background-color: #ef4444;
+  background-color: var(--pr-high-fg);
 }
 .priority-dot-normal,
 .priority-dot-medium {
-  background-color: #f59e0b;
+  background-color: var(--pr-medium-fg);
 }
 .priority-dot-low {
-  background-color: #94a3b8;
+  background-color: var(--pr-low-fg);
 }
 
-/* Emil Kowalski Tactile Interaction Physics */
-:root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+/* Status Column Accents */
+.status-track-todo {
+  border-top: 2px solid var(--st-todo-fg);
 }
-
-.tactile-btn {
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease;
+.status-track-in_progress {
+  border-top: 2px solid var(--st-progress-fg);
 }
-
-.tactile-btn:active {
-  transform: scale(0.97);
+.status-track-done {
+  border-top: 2px solid var(--st-done-fg);
 }
-
-.tactile-card {
-  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1), border-color 150ms ease, box-shadow 150ms ease;
-}
-
-.tactile-card:active {
-  transform: scale(0.985);
-}
-

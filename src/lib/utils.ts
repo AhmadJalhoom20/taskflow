@@ -143,25 +143,51 @@ export function getPriorityLabel(priority: TaskPriority | string, lang: 'en' | '
 export function getStatusBadgeClass(status: TaskStatus): string {
   switch (status) {
     case 'todo':
-      return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300';
+      return 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]';
     case 'in_progress':
-      return 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300';
+      return 'bg-[#8DB4E8]/15 text-[#8DB4E8] border border-[#8DB4E8]/30';
     case 'done':
-      return 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300';
+      return 'bg-[#9CC5A1]/15 text-[#3b6e41] dark:text-[#9CC5A1] border border-[#9CC5A1]/30';
     default:
-      return 'bg-slate-100 text-slate-700';
+      return 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C]';
   }
 }
 
 export function getPriorityBadgeClass(priority: TaskPriority): string {
   switch (priority) {
     case 'high':
-      return 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300';
+      return 'bg-[#EE8A78]/15 text-[#c24b37] dark:text-[#EE8A78] border border-[#EE8A78]/30';
     case 'medium':
-      return 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300';
+      return 'bg-[#8DB4E8]/15 text-[#8DB4E8] border border-[#8DB4E8]/30';
     case 'low':
-      return 'bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-300';
+      return 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]';
     default:
-      return 'bg-gray-100 text-gray-700';
+      return 'bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C]';
   }
+}
+
+export interface ParsedTaskTag {
+  tag?: {
+    label: string;
+    type: 'bug' | 'feature' | 'improvement' | 'default';
+  };
+  cleanTitle: string;
+}
+
+export function parseTaskTag(title: string): ParsedTaskTag {
+  if (!title) return { cleanTitle: '' };
+  const match = title.match(/^\s*\[(Bug|Feature|Improvement|خطأ|ميزة|تحسين|Fix)\]\s*(.*)$/i);
+  if (match) {
+    const rawTag = match[1].toLowerCase();
+    let type: 'bug' | 'feature' | 'improvement' | 'default' = 'default';
+    if (rawTag === 'bug' || rawTag === 'fix' || rawTag === 'خطأ') type = 'bug';
+    else if (rawTag === 'feature' || rawTag === 'ميزة') type = 'feature';
+    else if (rawTag === 'improvement' || rawTag === 'تحسين') type = 'improvement';
+
+    return {
+      tag: { label: match[1], type },
+      cleanTitle: match[2] || title,
+    };
+  }
+  return { cleanTitle: title };
 }

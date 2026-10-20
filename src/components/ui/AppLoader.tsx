@@ -20,13 +20,13 @@ export default function AppLoader({
   }[size] || 'w-5 h-5 border-2';
 
   return (
-    <div className={`inline-flex items-center justify-center gap-2.5 text-slate-500 dark:text-slate-400 ${className}`} role="status">
+    <div className={`inline-flex items-center justify-center gap-2.5 text-[#5A5348] dark:text-[#9A9183] ${className}`} role="status">
       <div
-        className={`${dimensions} rounded-full border-slate-300 dark:border-slate-700 border-t-amber-500 dark:border-t-amber-400 animate-spin`}
+        className={`${dimensions} rounded-full border-[#DDDAD3] dark:border-[#2C2824] border-t-[#7A5818] dark:border-t-[#D4B26E] animate-spin`}
         aria-hidden="true"
       />
       {tip ? (
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+        <span className="text-xs font-medium text-[#1B1915] dark:text-[#EFE9DD]">
           {tip}
         </span>
       ) : (

@@ -5,7 +5,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { LanguageProvider } from '@/context/LanguageContext';
 import AntdProvider from '@/components/providers/AntdProvider';
-import Navbar from '@/components/layout/Navbar';
+import AppShell from '@/components/layout/AppShell';
 import TopProgressBar from '@/components/ui/TopProgressBar';
 
 export const metadata: Metadata = {
@@ -25,11 +25,16 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+          rel="preload"
+          as="style"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
+        />
+        <link
           rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
         />
       </head>
-      <body className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 transition-colors">
+      <body className="flex flex-col min-h-screen bg-[#F4F4F2] dark:bg-[#0C0B0A] text-[#1B1915] dark:text-[#EFE9DD] transition-colors selection:bg-[#D4B26E]/30">
         <Suspense fallback={null}>
           <TopProgressBar />
         </Suspense>
@@ -37,10 +42,9 @@ export default function RootLayout({
           <ThemeProvider>
             <AntdProvider>
               <AuthProvider>
-                <Navbar />
-                <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <AppShell>
                   {children}
-                </main>
+                </AppShell>
               </AuthProvider>
             </AntdProvider>
           </ThemeProvider>

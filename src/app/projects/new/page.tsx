@@ -1,183 +1,365 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+// ============================================================================
+// 1. IMPORTS
+// ============================================================================
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { useLanguage } from '@/context/LanguageContext';
-import { DataService } from '@/services/dataStore';
 import Link from 'next/link';
 import {
   FolderAddOutlined,
   ArrowLeftOutlined,
+  ArrowRightOutlined,
   CrownOutlined,
-  SafetyCertificateOutlined,
-  InfoCircleOutlined,
   AppstoreOutlined,
   CompassOutlined,
   BugOutlined,
   CheckCircleFilled,
 } from '@ant-design/icons';
-import { Card, Form, Input, Button, Alert, Typography, Breadcrumb, Tag, Spin } from 'antd';
+import { Card, Form, Input, Button, Alert, Typography, Breadcrumb, Spin } from 'antd';
+import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { DataService } from '@/services/dataStore';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
-interface TemplateOption {
+// ============================================================================
+// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// ============================================================================
+// Tweak project creation presets, suggested names, validation limits, and styles here.
+const CONFIG = {
+  maxNameLength: 80,
+  minNameLength: 3,
+  maxDescLength: 1000,
+  defaultTemplateKey: null as string | null,
+} as const;
+
+const SUGGESTED_NAMES_MAP = {
+  en: [
+    'Platform Core 2026',
+    'Design System & Tokens',
+    'API Gateway & Auth',
+    'Mobile Client Sprint',
+    'Infrastructure Migration',
+  ],
+  ar: [
+    'المنصة الأساسية 2026',
+    'نظام التصميم والتوكنز',
+    'بوابة الـ API والمصادقة',
+    'تطوير تطبيق الهاتف',
+    'ترحيل البنية التحتية',
+  ],
+} as const;
+
+const TEMPLATES_MAP = {
+  en: [
+    {
+      key: 'sprint',
+      name: 'Engineering Sprint',
+      tag: 'Agile & Kanban',
+      iconType: 'appstore' as const,
+      defaultName: 'Platform Core: Sprint 2026',
+      defaultDesc:
+        'Core engineering sprint focusing on backend API stabilization, high-priority issues, and release milestones.',
+    },
+    {
+      key: 'roadmap',
+      name: 'Product & UX Roadmap',
+      tag: 'Discovery & Specs',
+      iconType: 'compass' as const,
+      defaultName: 'Product & UX Roadmap',
+      defaultDesc:
+        'Quarterly product initiatives, customer feedback loops, and design system tokens.',
+    },
+    {
+      key: 'triage',
+      name: 'Architecture & Bug Triage',
+      tag: 'Reliability & Ops',
+      iconType: 'bug' as const,
+      defaultName: 'Architecture & Bug Triage',
+      defaultDesc:
+        'Database performance optimizations, RFC-9457 error contracts, security audits, and regression tracking.',
+    },
+  ],
+  ar: [
+    {
+      key: 'sprint',
+      name: 'سبرنت هندسي برمجى',
+      tag: 'أجايل وكانبان',
+      iconType: 'appstore' as const,
+      defaultName: 'سبرنت المنصة الأساسية 2026',
+      defaultDesc:
+        'سبرنت هندسي برمجى يركز على استقرار الـ API الخلفية ومعالجة المهام الحرجة ومحطات الإطلاق.',
+    },
+    {
+      key: 'roadmap',
+      name: 'خارطة طريق ومواصفات',
+      tag: 'استكشاف ومواصفات',
+      iconType: 'compass' as const,
+      defaultName: 'خارطة طريق المنتج وتجربة المستخدم',
+      defaultDesc:
+        'مبادرات الإطلاق الفصلية، مراجعة توكنز التصميم، وتوثيق آراء المستخدمين ومتطلبات السوق.',
+    },
+    {
+      key: 'triage',
+      name: 'إدارة البنية ومعالجة الأخطاء',
+      tag: 'الموثوقية والعمليات',
+      iconType: 'bug' as const,
+      defaultName: 'إدارة البنية ومعالجة الأخطاء',
+      defaultDesc:
+        'تحسين أداء قواعد البيانات، عقود أخطاء RFC-9457، تدقيق الأمان وتتبع معايير SLA.',
+    },
+  ],
+} as const;
+
+const STYLES = {
+  container: 'max-w-4xl mx-auto space-y-6 py-4',
+  headerIconBox:
+    'w-10 h-10 rounded-lg bg-[#7A5818]/10 dark:bg-[#D4B26E]/10 border border-[#7A5818]/25 dark:border-[#D4B26E]/25 flex items-center justify-center text-[#7A5818] dark:text-[#D4B26E]',
+  pageTitle:
+    '!mb-0 !text-2xl !font-bold tracking-tight text-[#1B1915] dark:text-[#EFE9DD] font-display',
+  pageSubtitle: 'text-sm !text-[#5A5348] dark:!text-[#B5AC9C]',
+  sectionHeading:
+    'text-sm font-semibold text-[#1B1915] dark:text-[#EFE9DD] uppercase tracking-wider',
+  card: 'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark',
+  inputBase:
+    'rounded text-sm bg-white dark:bg-[#1C1A17] border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD]',
+  suggestedChip:
+    'tactile-btn text-xs sm:text-sm font-mono px-2.5 py-1 rounded bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] text-[#5A5348] dark:text-[#B5AC9C] hover:border-[#7A5818] dark:hover:border-[#D4B26E] hover:text-[#7A5818] dark:hover:text-[#D4B26E] transition-colors cursor-pointer',
+  templateActive:
+    'border-[#7A5818] dark:border-[#D4B26E] bg-[#7A5818]/[0.05] dark:bg-[#D4B26E]/10 ring-1 ring-[#7A5818] dark:ring-[#D4B26E] shadow-xs',
+  templateInactive:
+    'border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] hover:border-[#7A5818]/40 dark:hover:border-[#D4B26E]/40',
+  primarySubmitButton:
+    'tactile-btn font-bold !text-white dark:!text-[#1A1408] !bg-[#7A5818] dark:!bg-[#D4B26E] hover:!bg-[#5e4310] dark:hover:!bg-[#e5c583] !border-[#7A5818] dark:!border-[#D4B26E] rounded px-6 shadow-xs',
+  secondaryButton:
+    'tactile-btn border-[#DDDAD3] dark:border-[#2C2824] text-[#5A5348] dark:text-[#B5AC9C] font-semibold rounded',
+  ownerBanner:
+    'p-3 rounded-lg bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] flex items-center justify-between text-sm',
+} as const;
+
+// ============================================================================
+// 3. TYPES & INTERFACES
+// ============================================================================
+type TemplateIconType = 'appstore' | 'compass' | 'bug';
+
+interface TemplateItem {
   key: string;
   name: string;
   tag: string;
-  badgeColor: string;
-  icon: React.ReactNode;
+  iconType: TemplateIconType;
   defaultName: string;
   defaultDesc: string;
 }
 
-const SUGGESTED_NAMES_EN = [
-  'Platform Core 2026',
-  'Design System & Tokens',
-  'API Gateway & Auth',
-  'Mobile Client Sprint',
-  'Infrastructure Migration',
-];
+interface ProjectFormValues {
+  name: string;
+  description?: string;
+}
 
-const SUGGESTED_NAMES_AR = [
-  'المنصة الأساسية 2026',
-  'نظام التصميم والتوكنز',
-  'بوابة الـ API والمصادقة',
-  'تطوير تطبيق الهاتف',
-  'ترحيل البنية التحتية',
-];
+// ============================================================================
+// 4. HELPER FUNCTIONS & HOOKS
+// ============================================================================
+function renderTemplateIcon(iconType: TemplateIconType) {
+  const iconClass = 'text-[#7A5818] dark:text-[#D4B26E] text-lg';
+  switch (iconType) {
+    case 'compass':
+      return <CompassOutlined className={iconClass} />;
+    case 'bug':
+      return <BugOutlined className={iconClass} />;
+    case 'appstore':
+    default:
+      return <AppstoreOutlined className={iconClass} />;
+  }
+}
 
+// ============================================================================
+// 5. SUB-COMPONENTS
+// ============================================================================
+interface TemplateCardProps {
+  template: TemplateItem;
+  isSelected: boolean;
+  onSelect: (key: string) => void;
+}
+
+function TemplateCard({ template, isSelected, onSelect }: TemplateCardProps) {
+  return (
+    <div
+      onClick={() => onSelect(template.key)}
+      className={`tactile-card rounded-lg p-3.5 border cursor-pointer flex flex-col justify-between transition-all select-none ${
+        isSelected ? STYLES.templateActive : STYLES.templateInactive
+      }`}
+    >
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="w-8 h-8 rounded-md bg-[#EDECE8] dark:bg-[#1C1A17] flex items-center justify-center">
+            {renderTemplateIcon(template.iconType)}
+          </div>
+          {isSelected ? (
+            <CheckCircleFilled className="text-[#7A5818] dark:text-[#D4B26E] text-sm" />
+          ) : (
+            <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]">
+              {template.tag}
+            </span>
+          )}
+        </div>
+        <div>
+          <h4 className="font-bold text-base text-[#1B1915] dark:text-[#EFE9DD] font-display">
+            {template.name}
+          </h4>
+          <p className="text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C] line-clamp-2 mt-1 leading-relaxed">
+            {template.defaultDesc}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface SuggestedNamesBarProps {
+  names: readonly string[];
+  isArabic: boolean;
+  onApplyName: (name: string) => void;
+}
+
+function SuggestedNamesBar({ names, isArabic, onApplyName }: SuggestedNamesBarProps) {
+  return (
+    <div className="mb-2">
+      <span className="text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C] block mb-1.5 font-medium">
+        {isArabic ? 'اقتراحات سريعة لاسم المشروع:' : 'Quick name suggestions:'}
+      </span>
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {names.map((name) => (
+          <button
+            key={name}
+            type="button"
+            onClick={() => onApplyName(name)}
+            className={STYLES.suggestedChip}
+          >
+            + {name}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface OwnerAuthorityBannerProps {
+  ownerName?: string;
+  isArabic: boolean;
+}
+
+function OwnerAuthorityBanner({ ownerName, isArabic }: OwnerAuthorityBannerProps) {
+  return (
+    <div className={STYLES.ownerBanner}>
+      <div className="flex items-center gap-2">
+        <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
+        <span className="text-[#5A5348] dark:text-[#B5AC9C] font-medium">
+          {isArabic ? 'مالك المشروع المسجل:' : 'Project Owner Authority:'}
+        </span>
+        <strong className="text-[#1B1915] dark:text-[#EFE9DD]">{ownerName || '—'}</strong>
+      </div>
+      <span className="font-mono text-xs uppercase font-bold text-[#7A5818] dark:text-[#D4B26E] bg-[#7A5818]/10 dark:bg-[#D4B26E]/10 px-2 py-0.5 rounded border border-[#7A5818]/25 dark:border-[#D4B26E]/25">
+        OWNER RBAC
+      </span>
+    </div>
+  );
+}
+
+// ============================================================================
+// 6. MAIN COMPONENT
+// ============================================================================
 function NewProjectForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const templateParam = searchParams.get('template');
+  const templateParam = searchParams ? searchParams.get('template') : null;
+
   const { user, loading: authLoading } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
   const [form] = Form.useForm();
 
   const isArabic = language === 'ar';
 
-  const templates: TemplateOption[] = [
-    {
-      key: 'sprint',
-      name: isArabic ? 'سبرنت هندسي برمجى' : 'Engineering Sprint',
-      tag: isArabic ? 'أجايل وكانبان' : 'Agile & Kanban',
-      badgeColor: 'gold',
-      icon: <AppstoreOutlined className="text-amber-500 text-lg" />,
-      defaultName: isArabic ? 'سبرنت المنصة الأساسية 2026' : 'Platform Core: Sprint 2026',
-      defaultDesc: isArabic
-        ? 'سبرنت هندسي برمجى يركز على استقرار الـ API الخلفية ومعالجة المهام الحرجة ومحطات الإطلاق.'
-        : 'Core engineering sprint focusing on backend API stabilization, high-priority issues, and release milestones.',
-    },
-    {
-      key: 'roadmap',
-      name: isArabic ? 'خارطة طريق المنتج وتجربة المستخدم' : 'Product & UX Roadmap',
-      tag: isArabic ? 'استكشاف ومواصفات' : 'Discovery & Specs',
-      badgeColor: 'purple',
-      icon: <CompassOutlined className="text-purple-500 text-lg" />,
-      defaultName: isArabic ? 'خارطة طريق المنتج وتجربة المستخدم' : 'Product & UX Roadmap',
-      defaultDesc: isArabic
-        ? 'مبادرات الإطلاق الفصلية، مراجعة توكنز التصميم، وتوثيق آراء المستخدمين ومتطلبات السوق.'
-        : 'Quarterly product initiatives, customer feedback loops, and design system tokens.',
-    },
-    {
-      key: 'triage',
-      name: isArabic ? 'إدارة البنية ومعالجة الأخطاء' : 'Architecture & Bug Triage',
-      tag: isArabic ? 'الموثوقية والعمليات' : 'Reliability & Ops',
-      badgeColor: 'emerald',
-      icon: <BugOutlined className="text-emerald-500 text-lg" />,
-      defaultName: isArabic ? 'إدارة البنية ومعالجة الأخطاء' : 'Architecture & Bug Triage',
-      defaultDesc: isArabic
-        ? 'تحسين أداء قواعد البيانات، عقود أخطاء RFC-9457، تدقيق الأمان وتتبع معايير SLA.'
-        : 'Database performance optimizations, RFC-9457 error contracts, security audits, and regression tracking.',
-    },
-  ];
+  // --- Derived Configuration based on current language ---
+  const templates = useMemo<readonly TemplateItem[]>(() => {
+    return isArabic ? TEMPLATES_MAP.ar : TEMPLATES_MAP.en;
+  }, [isArabic]);
 
-  const suggestedNames = isArabic ? SUGGESTED_NAMES_AR : SUGGESTED_NAMES_EN;
+  const suggestedNames = useMemo<readonly string[]>(() => {
+    return isArabic ? SUGGESTED_NAMES_MAP.ar : SUGGESTED_NAMES_MAP.en;
+  }, [isArabic]);
 
+  // --- Form State ---
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(templateParam || null);
-  const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- Authentication Protection Guard ---
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
     }
   }, [user, authLoading, router]);
 
+  // --- Sync Selected Template into Form Fields ---
   useEffect(() => {
-    if (templateParam) {
-      const match = templates.find((t) => t.key === templateParam);
-      if (match) {
-        setSelectedTemplate(match.key);
+    if (selectedTemplate) {
+      const matched = templates.find((tpl) => tpl.key === selectedTemplate);
+      if (matched) {
         form.setFieldsValue({
-          name: match.defaultName,
-          description: match.defaultDesc,
+          name: matched.defaultName,
+          description: matched.defaultDesc,
         });
       }
     }
-  }, [templateParam, form, language]);
+  }, [selectedTemplate, templates, form]);
 
-  const handleSelectTemplate = (template: TemplateOption) => {
-    if (selectedTemplate === template.key) {
+  // --- Event Handlers ---
+  const handleSelectTemplate = (templateKey: string) => {
+    if (selectedTemplate === templateKey) {
       setSelectedTemplate(null);
       form.setFieldsValue({ name: '', description: '' });
     } else {
-      setSelectedTemplate(template.key);
-      form.setFieldsValue({
-        name: template.defaultName,
-        description: template.defaultDesc,
-      });
+      setSelectedTemplate(templateKey);
     }
   };
 
-  const handleSubmit = async (values: any) => {
-    setError(null);
-    const trimmedName = values.name?.trim() || '';
+  const handleApplySuggestedName = (name: string) => {
+    form.setFieldsValue({ name });
+  };
 
-    if (trimmedName.length < 3 || trimmedName.length > 80) {
-      setError(
-        isArabic
-          ? 'يجب أن يكون اسم المشروع بين 3 و 80 حرفاً.'
-          : 'Project name must be between 3 and 80 characters.'
-      );
-      return;
-    }
+  const handleFormSubmit = async (values: ProjectFormValues) => {
+    if (!user || isSubmitting) return;
 
-    if (!user) return;
+    setErrorMessage(null);
+    setIsSubmitting(true);
 
     try {
-      setIsSubmitting(true);
-      const newProj = await DataService.createProject(trimmedName, values.description || '', user);
-      router.push(`/projects/${newProj.id}`);
+      const created = await DataService.createProject(
+        values.name.trim(),
+        values.description?.trim() || '',
+        user
+      );
+      router.push(`/projects/${created.id}`);
     } catch (err: any) {
-      setError(
-        err?.message ||
-          (isArabic
-            ? 'فشل في إنشاء المشروع. يرجى المحاولة مجدداً.'
-            : 'Failed to create project. Please try again.')
+      setErrorMessage(
+        err?.message || (isArabic ? 'فشل إنشاء المشروع' : 'Failed to create project')
       );
       setIsSubmitting(false);
     }
   };
 
-  const handleSuggestionClick = (name: string) => {
-    form.setFieldsValue({ name });
-  };
-
+  // --- Flat Guard Clauses ---
   if (authLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-3">
+      <div className="flex justify-center items-center py-24">
         <Spin size="large" />
-        <span className="text-xs text-slate-500 font-medium">
-          {isArabic ? 'جاري التحقق من صلاحيات الحساب...' : 'Verifying workspace permissions...'}
-        </span>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-4 space-y-5">
+    <div className={STYLES.container}>
       {/* Breadcrumb Navigation */}
       <Breadcrumb
         items={[
@@ -186,11 +368,39 @@ function NewProjectForm() {
         ]}
       />
 
-      {/* Template Quick Selection */}
-      <div className="space-y-2.5">
+      {/* Header Banner */}
+      <div className="flex items-center gap-2.5">
+        <div className={STYLES.headerIconBox}>
+          <FolderAddOutlined className="text-xl" />
+        </div>
+        <div>
+          <Title level={2} className={STYLES.pageTitle}>
+            {t('newProject')}
+          </Title>
+          <Text type="secondary" className={STYLES.pageSubtitle}>
+            {isArabic
+              ? 'أنشئ مساحة عمل هندسية جديدة لتنسيق السبرنت وتوزيع المهام'
+              : 'Initialize a new engineering project workspace with pure SQL durability'}
+          </Text>
+        </div>
+      </div>
+
+      {/* Error Alert */}
+      {errorMessage && (
+        <Alert
+          title={errorMessage}
+          type="error"
+          showIcon
+          role="alert"
+          className="text-sm rounded-md"
+        />
+      )}
+
+      {/* Template Selection Gallery */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-            {t('quickStartTemplates')}
+          <span className={STYLES.sectionHeading}>
+            {isArabic ? '1. اختر قالباً هندسياً (اختياري)' : '1. Select a starter template (optional)'}
           </span>
           {selectedTemplate && (
             <button
@@ -199,145 +409,133 @@ function NewProjectForm() {
                 setSelectedTemplate(null);
                 form.setFieldsValue({ name: '', description: '' });
               }}
-              className="text-xs text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+              className="text-sm text-[#5A5348] hover:text-[#7A5818] dark:hover:text-[#D4B26E] transition-colors font-semibold cursor-pointer"
             >
-              {t('clearTemplate')}
+              {isArabic ? 'إلغاء التحديد' : 'Clear selection'}
             </button>
           )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {templates.map((tmpl) => {
-            const isSelected = selectedTemplate === tmpl.key;
-            return (
-              <div
-                key={tmpl.key}
-                onClick={() => handleSelectTemplate(tmpl)}
-                className={`p-3.5 rounded-xl border text-start cursor-pointer transition-all ${
-                  isSelected
-                    ? 'border-amber-500 bg-amber-500/10 dark:bg-amber-500/15 ring-2 ring-amber-500/20 shadow-sm'
-                    : 'border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] hover:border-slate-300 dark:hover:border-slate-700'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#161d2e] border border-slate-200/80 dark:border-[#1b2336] flex items-center justify-center">
-                    {tmpl.icon}
-                  </div>
-                  {isSelected && <CheckCircleFilled className="text-amber-500 text-sm" />}
-                </div>
-                <div className="font-semibold text-xs text-slate-900 dark:text-slate-100">
-                  {tmpl.name}
-                </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
-                  {tmpl.defaultDesc}
-                </div>
-              </div>
-            );
-          })}
+          {templates.map((tpl) => (
+            <TemplateCard
+              key={tpl.key}
+              template={tpl}
+              isSelected={selectedTemplate === tpl.key}
+              onSelect={handleSelectTemplate}
+            />
+          ))}
         </div>
       </div>
 
-      <Card
-        variant="outlined"
-        className="relative border-slate-200 dark:border-[#1b2336] bg-white dark:bg-[#0e131f] shadow-sm rounded-xl overflow-hidden"
-        title={
-          <div className="flex items-center gap-3 py-1.5">
-            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <FolderAddOutlined className="text-base" />
-            </div>
-            <div>
-              <div className="text-base font-bold text-slate-900 dark:text-slate-100">
-                {t('initProjectWorkspace')}
-              </div>
-              <div className="text-xs font-normal text-slate-400 flex items-center gap-1.5">
-                <CrownOutlined className="text-amber-500 text-[11px]" />
-                <span>{t('ownerAuthorityGrant')}</span>
-              </div>
-            </div>
-          </div>
-        }
-      >
-        {error && (
-          <Alert
-            title={error}
-            type="error"
-            showIcon
-            className="mb-5 text-xs rounded-lg"
+      {/* Project Configuration Card */}
+      <Card variant="outlined" className={STYLES.card}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFormSubmit}
+          onKeyDown={(e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+              e.preventDefault();
+              form.submit();
+            }
+          }}
+          requiredMark="optional"
+          className="space-y-2"
+        >
+          {/* Quick Suggested Names */}
+          <SuggestedNamesBar
+            names={suggestedNames}
+            isArabic={isArabic}
+            onApplyName={handleApplySuggestedName}
           />
-        )}
 
-        {/* Informative Governance Callout */}
-        <div className="p-3.5 mb-6 rounded-lg bg-slate-50 dark:bg-[#141a29] border border-slate-200/80 dark:border-[#1b2336] flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-          <InfoCircleOutlined className="text-amber-500 text-sm mt-0.5 flex-shrink-0" />
-          <div className="leading-relaxed">
-            {t('governanceCallout')}
-          </div>
-        </div>
-
-        <Form form={form} layout="vertical" onFinish={handleSubmit} requiredMark="optional">
           <Form.Item
             name="name"
-            label={<span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('projectNameLabel')}</span>}
-            extra={
-              <div className="space-y-2 mt-1.5">
-                <span className="text-[11px] text-slate-400">{t('projectNameExtra')}</span>
-                <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                  <span className="text-[11px] text-slate-400">{t('suggestions')}</span>
-                  {suggestedNames.map((name) => (
-                    <button
-                      key={name}
-                      type="button"
-                      onClick={() => handleSuggestionClick(name)}
-                      className="text-[11px] px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors"
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            label={
+              <span className="text-sm font-semibold text-[#1B1915] dark:text-[#EFE9DD]">
+                {isArabic ? 'اسم المشروع' : 'Project Name'}
+              </span>
             }
             rules={[
-              { required: true, message: isArabic ? 'يرجى إدخال اسم المشروع' : 'Please enter a project name' },
-              { min: 3, message: isArabic ? 'الحد الأدنى 3 أحرف' : 'Minimum 3 characters required' },
-              { max: 80, message: isArabic ? 'الحد الأقصى 80 حرفاً' : 'Maximum 80 characters allowed' },
+              {
+                required: true,
+                message: isArabic ? 'يرجى إدخال اسم المشروع' : 'Please enter project name',
+              },
+              {
+                min: CONFIG.minNameLength,
+                message: isArabic ? 'يجب أن لا يقل عن 3 أحرف' : 'Minimum 3 characters',
+              },
+              {
+                max: CONFIG.maxNameLength,
+                message: isArabic ? 'يجب أن لا يزيد عن 80 حرفاً' : 'Maximum 80 characters',
+              },
             ]}
           >
             <Input
-              showCount
-              maxLength={80}
-              placeholder={isArabic ? 'مثال: المنصة الأساسية 2026' : 'e.g. Platform Core 2026'}
+              placeholder={isArabic ? 'مثال: المنصة الأساسية 2026' : 'e.g. Platform Core Engine'}
               size="large"
-              className="rounded-lg text-sm bg-slate-50/50 dark:bg-[#161b26] border-slate-200 dark:border-[#222938]"
+              maxLength={CONFIG.maxNameLength}
+              showCount
+              dir="auto"
+              className={STYLES.inputBase}
             />
           </Form.Item>
 
           <Form.Item
             name="description"
-            label={<span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{t('objectivesScopeLabel')}</span>}
-            extra={<span className="text-[11px] text-slate-400">{t('objectivesExtra')}</span>}
-            rules={[{ max: 1000, message: isArabic ? 'لا يمكن أن يتجاوز الوصف 1000 حرف' : 'Description cannot exceed 1000 characters' }]}
+            label={
+              <span className="text-sm font-semibold text-[#1B1915] dark:text-[#EFE9DD]">
+                {isArabic ? 'أهداف ونطاق العمل' : 'Description & Scope'}
+              </span>
+            }
+            rules={[
+              {
+                max: CONFIG.maxDescLength,
+                message: isArabic ? 'يجب أن لا يزيد عن 1000 حرف' : 'Maximum 1000 characters',
+              },
+            ]}
           >
             <Input.TextArea
-              showCount
-              maxLength={1000}
+              placeholder={
+                isArabic
+                  ? 'صف أهداف ومسار عمل هذا المشروع الهندسية...'
+                  : 'Describe technical objectives, sprint milestones, and deliverables...'
+              }
               rows={4}
-              placeholder={t('objectivesPlaceholder')}
-              className="rounded-lg text-sm bg-slate-50/50 dark:bg-[#161b26] border-slate-200 dark:border-[#222938]"
+              maxLength={CONFIG.maxDescLength}
+              showCount
+              dir="auto"
+              className={STYLES.inputBase}
             />
           </Form.Item>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-[#1e2430]">
-            <Link href="/dashboard">
-              <Button className="border-slate-200 dark:border-[#1e2430] rounded-lg">{t('cancel')}</Button>
-            </Link>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={isSubmitting}
-              className="!bg-amber-500 hover:!bg-amber-400 !border-amber-500 !text-slate-950 font-bold px-6 rounded-lg shadow-sm shadow-amber-500/20"
-            >
-              {t('initWorkspaceBtn')}
-            </Button>
+          {/* Ownership Readout */}
+          <OwnerAuthorityBanner ownerName={user?.displayName} isArabic={isArabic} />
+
+          {/* Action Buttons */}
+          <div className="pt-4 flex items-center justify-between gap-3">
+            <span className="text-[11px] font-mono text-[#736B5E] dark:text-[#9A9183]">
+              {isArabic ? 'اضغط ⌘+Enter للإنشاء الفوري' : 'Press ⌘+Enter to submit'}
+            </span>
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard">
+                <Button size="large" className={STYLES.secondaryButton}>
+                  {t('cancel')}
+                </Button>
+              </Link>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={isSubmitting}
+                iconPlacement="end"
+                icon={isRTL ? <ArrowLeftOutlined /> : <ArrowRightOutlined />}
+                className={STYLES.primarySubmitButton}
+              >
+                {isArabic ? 'إنشاء مساحة العمل' : 'Initialize Workspace'}
+              </Button>
+            </div>
           </div>
         </Form>
       </Card>
@@ -349,7 +547,7 @@ export default function NewProjectPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="flex justify-center py-24">
           <Spin size="large" />
         </div>
       }
