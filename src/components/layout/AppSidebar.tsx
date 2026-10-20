@@ -27,7 +27,7 @@ const CACHE_KEY = 'taskflow_cached_projects';
 
 const STYLES = {
   sidebarBase:
-    'relative flex flex-col shrink-0 border-e border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#11100E] transition-all duration-200 select-none z-30 h-[calc(100vh-3.5rem)] sticky top-14',
+    'relative flex flex-col shrink-0 border-e border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#11100E] transition-all duration-200 select-none z-30 h-full',
   primaryNewProjectBtn:
     'tactile-btn !bg-[#7A5818] hover:!bg-[#5E420E] dark:!bg-[#D4B26E] dark:hover:!bg-[#E2C88E] !border-transparent !text-white dark:!text-[#1A1408] font-bold text-sm shadow-xs',
   navLinkActive:

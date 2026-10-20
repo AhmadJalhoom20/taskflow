@@ -126,10 +126,10 @@ const KANBAN_COLUMNS_CONFIG: Record<
 };
 
 const STYLES = {
-  container: 'space-y-6',
+  container: 'space-y-4',
   card: 'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark',
   cardFlat: 'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-none',
-  pageTitle: '!mb-0 !text-2xl !font-bold tracking-tight text-[#1B1915] dark:text-[#EFE9DD] font-display',
+  pageTitle: '!mb-0 !text-xl sm:!text-2xl !font-bold tracking-tight text-[#1B1915] dark:text-[#EFE9DD] font-display',
   primaryGoldButton:
     'tactile-btn !bg-[#7A5818] hover:!bg-[#5E420E] dark:!bg-[#D4B26E] dark:hover:!bg-[#E2C88E] !border-transparent !text-white dark:!text-[#1A1408] font-bold shadow-xs text-sm',
   secondaryButton:
@@ -137,7 +137,7 @@ const STYLES = {
   inputBase:
     'rounded text-sm bg-[#F4F4F2] dark:bg-[#141211] border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD]',
   columnShell:
-    'flex-col rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative min-h-[620px] lg:min-h-[calc(100vh-270px)]',
+    'flex-col rounded-xl border p-4 space-y-3.5 transition-all duration-150 relative min-h-[580px] lg:min-h-[calc(100vh-210px)]',
 } as const;
 
 // ============================================================================
@@ -236,108 +236,7 @@ function filterAndSortTasks(
 // ============================================================================
 // 5. SUB-COMPONENTS
 // ============================================================================
-interface VelocityMetricCountersProps {
-  totalCount: number;
-  todoCount: number;
-  inProgressCount: number;
-  doneCount: number;
-  overdueCount: number;
-  isArabic: boolean;
-  t: (key: TranslationKey) => string;
-}
 
-function VelocityMetricCounters({
-  totalCount,
-  todoCount,
-  inProgressCount,
-  doneCount,
-  overdueCount,
-  isArabic,
-  t,
-}: VelocityMetricCountersProps) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-4 mt-4 border-t border-[#DDDAD3] dark:border-[#2C2824] text-sm">
-      <Tooltip title={isArabic ? 'إجمالي عدد المهام في هذا المشروع' : 'Total project tasks'}>
-        <div className="p-3 rounded-lg bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] cursor-default">
-          <span className="text-[#736B5E] dark:text-[#9A9183] block text-xs uppercase font-semibold tracking-wider">
-            {t('totalTasks')}
-          </span>
-          <span className="text-xl sm:text-2xl font-bold text-[#1B1915] dark:text-[#EFE9DD] tnum">
-            {totalCount}
-          </span>
-        </div>
-      </Tooltip>
-
-      <Tooltip title={isArabic ? 'مهام في قائمة الانتظار' : 'Tasks waiting in queue'}>
-        <div className="p-3 rounded-lg bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] cursor-default">
-          <span className="text-[#736B5E] dark:text-[#9A9183] block text-xs uppercase font-semibold tracking-wider">
-            {t('statusTodo')}
-          </span>
-          <span className="text-xl sm:text-2xl font-bold text-[#1B1915] dark:text-[#EFE9DD] tnum">
-            {todoCount}
-          </span>
-        </div>
-      </Tooltip>
-
-      <Tooltip title={isArabic ? 'مهام قيد التنفيذ والعمل حالياً' : 'Tasks currently in development'}>
-        <div className="p-3 rounded-lg bg-[#E3EDF8] dark:bg-[#142136] border border-[#8DB4E8]/20 cursor-default">
-          <span className="text-[#1E4D8A] dark:text-[#8DB4E8] block text-xs uppercase font-semibold tracking-wider">
-            {t('statusInProgress')}
-          </span>
-          <span className="text-xl sm:text-2xl font-bold text-[#1E4D8A] dark:text-[#8DB4E8] tnum">
-            {inProgressCount}
-          </span>
-        </div>
-      </Tooltip>
-
-      <Tooltip title={isArabic ? 'مهام تم إنجازها واعتمادها' : 'Tasks completed'}>
-        <div className="p-3 rounded-lg bg-[#E1EFE4] dark:bg-[#152618] border border-[#9CC5A1]/20 cursor-default">
-          <span className="text-[#235832] dark:text-[#9CC5A1] block text-xs uppercase font-semibold tracking-wider">
-            {t('statusDone')}
-          </span>
-          <span className="text-xl sm:text-2xl font-bold text-[#235832] dark:text-[#9CC5A1] tnum">
-            {doneCount}
-          </span>
-        </div>
-      </Tooltip>
-
-      <Tooltip
-        title={
-          overdueCount > 0
-            ? isArabic
-              ? 'مهام متأخرة تجاوزت موعد التسليم'
-              : 'Tasks overdue past deadline'
-            : isArabic
-            ? 'لا توجد مهام متأخرة'
-            : 'No overdue tasks'
-        }
-      >
-        <div
-          className={`p-3 rounded-lg cursor-default ${
-            overdueCount > 0
-              ? 'bg-[#FCE8E5] dark:bg-[#331915] border border-[#EE8A78]/30'
-              : 'bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824]'
-          }`}
-        >
-          <span
-            className={`block text-xs uppercase font-semibold tracking-wider ${
-              overdueCount > 0 ? 'text-[#9C2E1F] dark:text-[#EE8A78]' : 'text-[#736B5E] dark:text-[#9A9183]'
-            }`}
-          >
-            {t('overdueFilter')}
-          </span>
-          <span
-            className={`text-xl sm:text-2xl font-bold tnum ${
-              overdueCount > 0 ? 'text-[#9C2E1F] dark:text-[#EE8A78]' : 'text-[#1B1915] dark:text-[#EFE9DD]'
-            }`}
-          >
-            {overdueCount}
-          </span>
-        </div>
-      </Tooltip>
-    </div>
-  );
-}
 
 interface KanbanColumnShellProps {
   status: TaskStatus;
@@ -1070,109 +969,138 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className={STYLES.container}>
-      {/* Breadcrumb Navigation */}
-      <Breadcrumb
-        items={[
-          { title: <Link href="/dashboard">{t('dashboard')}</Link> },
-          { title: project.name },
-        ]}
-      />
-
-      {/* Project Header Card with Velocity Progress */}
-      <Card variant="outlined" className={STYLES.card}>
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2 flex-1">
-            <div className="flex items-center gap-2.5 flex-wrap">
-              <Title level={2} className={STYLES.pageTitle}>
-                {project.name}
-              </Title>
-              <Tooltip
-                title={
-                  isOwner
-                    ? isArabic
-                      ? 'مالك المشروع (صلاحيات كاملة)'
-                      : 'Project Owner (Full Control)'
-                    : isArabic
-                    ? 'عضو في المشروع'
-                    : 'Project Member'
+      {/* Unified Project Workbench Header & Control Strip */}
+      <div className="tactile-card border border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark rounded-xl p-4 sm:p-5 space-y-4">
+        {/* Row 1: Project Identity, Telemetry Chips & Action Buttons */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Title level={2} className={STYLES.pageTitle}>
+              {project.name}
+            </Title>
+            <Tooltip
+              title={
+                isOwner
+                  ? isArabic
+                    ? 'مالك المشروع (صلاحيات كاملة)'
+                    : 'Project Owner (Full Control)'
+                  : isArabic
+                  ? 'عضو في المشروع'
+                  : 'Project Member'
+              }
+            >
+              <Tag
+                className="m-0 text-xs font-semibold border-[#DDDAD3] dark:border-[#2C2824] bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] cursor-default px-2.5 py-0.5"
+                icon={
+                  isOwner ? (
+                    <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
+                  ) : (
+                    <UserOutlined />
+                  )
                 }
               >
-                <Tag
-                  className="m-0 text-xs font-semibold border-[#DDDAD3] dark:border-[#2C2824] bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] cursor-default px-2.5 py-0.5"
-                  icon={
-                    isOwner ? (
-                      <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
-                    ) : (
-                      <UserOutlined />
-                    )
-                  }
-                >
-                  {isOwner ? t('owner') : t('member')}
-                </Tag>
-              </Tooltip>
-            </div>
+                {isOwner ? t('owner') : t('member')}
+              </Tag>
+            </Tooltip>
 
-            {project.description && (
-              <Paragraph className="text-sm text-[#5A5348] dark:text-[#B5AC9C] !mb-0 max-w-2xl leading-relaxed">
-                {project.description}
-              </Paragraph>
-            )}
-
-            {/* Team Roster tags */}
-            <div className="flex items-center gap-1.5 flex-wrap pt-1 text-sm">
-              <Text type="secondary" className="me-1 text-[#736B5E] dark:text-[#9A9183] text-sm">
-                <TeamOutlined /> {t('teamRoster')}:
-              </Text>
-              {project.memberIds.slice(0, CONFIG.teamRosterPreviewCount).map((mId) => {
-                const info = project.memberDetails?.[mId];
-                const isProjectOwner = mId === project.ownerId;
-                return (
-                  <Tooltip
-                    key={mId}
-                    title={isArabic ? 'عرض تفاصيل أعضاء الفريق' : 'View team roster'}
-                  >
-                    <Tag
-                      onClick={() => setIsTeamModalOpen(true)}
-                      className="text-xs border-[#DDDAD3] dark:border-[#2C2824] bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] cursor-pointer hover:border-[#7A5818] dark:hover:border-[#D4B26E] transition-colors px-2 py-0.5"
-                    >
-                      {isProjectOwner && (
-                        <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E] me-1" />
-                      )}
-                      {info?.displayName || mId}
-                    </Tag>
-                  </Tooltip>
-                );
-              })}
-              {project.memberIds.length > CONFIG.teamRosterPreviewCount && (
-                <Tooltip title={isArabic ? 'عرض جميع أعضاء الفريق' : 'View all team members'}>
-                  <button
-                    type="button"
-                    onClick={() => setIsTeamModalOpen(true)}
-                    className="tactile-btn inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 hover:bg-[#7A5818]/20 text-[#7A5818] dark:text-[#D4B26E] border border-[#7A5818]/25 dark:border-[#D4B26E]/30 cursor-pointer transition-colors"
-                  >
-                    +{project.memberIds.length - CONFIG.teamRosterPreviewCount} {t('membersCount')}
-                  </button>
-                </Tooltip>
+            {/* Inline Sleek Telemetry Badges */}
+            <div className="hidden sm:flex items-center gap-2 ps-1 text-xs font-medium text-[#736B5E] dark:text-[#9A9183]">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#EDECE8]/70 dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824]">
+                <span className="font-bold text-[#1B1915] dark:text-[#EFE9DD] tnum">{tasks.length}</span> {t('totalTasks')}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#E3EDF8]/50 dark:bg-[#142136]/50 border border-[#8DB4E8]/20 text-[#1E4D8A] dark:text-[#8DB4E8]">
+                <span className="font-bold tnum">{inProgressCount}</span> {t('statusInProgress')}
+              </span>
+              {overdueCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-[#9C2E1F] dark:text-[#EE8A78]">
+                  <span className="font-bold tnum">{overdueCount}</span> {t('overdueFilter')}
+                </span>
               )}
             </div>
           </div>
 
-          {/* Right Header Actions & Velocity Progress */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:border-s lg:border-[#DDDAD3] lg:dark:border-[#2C2824] lg:ps-6">
-            <Tooltip
-              title={
-                isArabic
-                  ? `معدل إنجاز مهام المشروع: ${completionPercent}%`
-                  : `Project sprint velocity: ${completionPercent}% done`
-              }
-            >
-              <div className="w-full sm:w-48 space-y-1.5 cursor-default">
-                <div className="flex justify-between items-center text-sm">
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+            {isOwner && (
+              <Tooltip title={t('projectSettingsTitle')}>
+                <Link href={`/projects/${project.id}/settings`}>
+                  <Button icon={<SettingOutlined />} size="middle" className={STYLES.secondaryButton}>
+                    {t('settings')}
+                  </Button>
+                </Link>
+              </Tooltip>
+            )}
+            <Tooltip title={t('addTask')}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                size="middle"
+                onClick={() => openCreateTaskModal('todo')}
+                className={STYLES.primaryGoldButton}
+              >
+                {t('addTask')}
+              </Button>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Row 2: Description & Team Roster + Sprint Velocity Bar */}
+        {(project.description || project.memberIds.length > 0 || tasks.length > 0) && (
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-3 border-t border-[#DDDAD3]/70 dark:border-[#2C2824]/70">
+            <div className="space-y-1.5 flex-1 min-w-0">
+              {project.description && (
+                <Paragraph className="text-xs sm:text-sm text-[#5A5348] dark:text-[#B5AC9C] !mb-0 max-w-2xl leading-relaxed">
+                  {project.description}
+                </Paragraph>
+              )}
+
+              {/* Team Roster tags */}
+              <div className="flex items-center gap-1.5 flex-wrap text-xs">
+                <Text type="secondary" className="me-1 text-[#736B5E] dark:text-[#9A9183]">
+                  <TeamOutlined /> {t('teamRoster')}:
+                </Text>
+                {project.memberIds.slice(0, CONFIG.teamRosterPreviewCount).map((mId) => {
+                  const info = project.memberDetails?.[mId];
+                  const isProjectOwner = mId === project.ownerId;
+                  return (
+                    <Tooltip
+                      key={mId}
+                      title={isArabic ? 'عرض تفاصيل أعضاء الفريق' : 'View team roster'}
+                    >
+                      <Tag
+                        onClick={() => setIsTeamModalOpen(true)}
+                        className="text-xs border-[#DDDAD3] dark:border-[#2C2824] bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] cursor-pointer hover:border-[#7A5818] dark:hover:border-[#D4B26E] transition-colors px-1.5 py-0"
+                      >
+                        {isProjectOwner && (
+                          <CrownOutlined className="text-[#7A5818] dark:text-[#D4B26E] me-1" />
+                        )}
+                        {info?.displayName || mId}
+                      </Tag>
+                    </Tooltip>
+                  );
+                })}
+                {project.memberIds.length > CONFIG.teamRosterPreviewCount && (
+                  <Tooltip title={isArabic ? 'عرض جميع أعضاء الفريق' : 'View all team members'}>
+                    <button
+                      type="button"
+                      onClick={() => setIsTeamModalOpen(true)}
+                      className="tactile-btn inline-flex items-center px-1.5 py-0 rounded text-xs font-semibold bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 hover:bg-[#7A5818]/20 text-[#7A5818] dark:text-[#D4B26E] border border-[#7A5818]/25 dark:border-[#D4B26E]/30 cursor-pointer transition-colors"
+                    >
+                      +{project.memberIds.length - CONFIG.teamRosterPreviewCount} {t('membersCount')}
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
+            </div>
+
+            {/* Compact Sprint Velocity */}
+            {tasks.length > 0 && (
+              <div className="w-full md:w-56 shrink-0 space-y-1">
+                <div className="flex justify-between items-center text-xs">
                   <span className="text-[#5A5348] dark:text-[#B5AC9C] font-medium">
                     {t('sprintVelocity')}
                   </span>
                   <span className="font-bold text-[#7A5818] dark:text-[#D4B26E] tnum">
-                    {completionPercent}%
+                    {completionPercent}% ({doneCount}/{tasks.length})
                   </span>
                 </div>
                 <Progress
@@ -1182,54 +1110,15 @@ export default function ProjectDetailsPage() {
                   railColor={
                     themeMode === 'dark' ? 'rgba(239, 233, 221, 0.1)' : 'rgba(27, 25, 21, 0.08)'
                   }
-                  size={['100%', 7]}
+                  size={['100%', 5]}
                 />
-                <div className="text-xs text-[#736B5E] dark:text-[#9A9183] tnum">
-                  {doneCount} of {tasks.length} {t('completed')}
-                </div>
               </div>
-            </Tooltip>
-
-            <div className="flex items-center gap-2">
-              {isOwner && (
-                <Tooltip title={t('projectSettingsTitle')}>
-                  <Link href={`/projects/${project.id}/settings`}>
-                    <Button icon={<SettingOutlined />} size="middle" className={STYLES.secondaryButton}>
-                      {t('settings')}
-                    </Button>
-                  </Link>
-                </Tooltip>
-              )}
-              <Tooltip title={t('addTask')}>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  size="middle"
-                  onClick={() => openCreateTaskModal('todo')}
-                  className={STYLES.primaryGoldButton}
-                >
-                  {t('addTask')}
-                </Button>
-              </Tooltip>
-            </div>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Task Velocity Counters */}
-        <VelocityMetricCounters
-          totalCount={tasks.length}
-          todoCount={todoCount}
-          inProgressCount={inProgressCount}
-          doneCount={doneCount}
-          overdueCount={overdueCount}
-          isArabic={isArabic}
-          t={t}
-        />
-      </Card>
-
-      {/* Search, Filter Toolbar & View Switcher */}
-      <Card variant="outlined" className={STYLES.cardFlat}>
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* Row 3: Integrated Filter & View Controls */}
+        <div className="pt-3 border-t border-[#DDDAD3]/70 dark:border-[#2C2824]/70 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
           {/* Left: View Mode Toggle */}
           <div className="flex items-center gap-2">
             <Segmented
@@ -1239,20 +1128,20 @@ export default function ProjectDetailsPage() {
               options={[
                 {
                   value: 'kanban',
-                  label: <span className="font-semibold text-sm px-1.5">{t('kanbanBoard')}</span>,
-                  icon: <AppstoreOutlined className="text-sm" />,
+                  label: <span className="font-semibold text-xs sm:text-sm px-1">{t('kanbanBoard')}</span>,
+                  icon: <AppstoreOutlined className="text-xs sm:text-sm" />,
                 },
                 {
                   value: 'table',
-                  label: <span className="font-semibold text-sm px-1.5">{t('tableView')}</span>,
-                  icon: <UnorderedListOutlined className="text-sm" />,
+                  label: <span className="font-semibold text-xs sm:text-sm px-1">{t('tableView')}</span>,
+                  icon: <UnorderedListOutlined className="text-xs sm:text-sm" />,
                 },
               ]}
             />
           </div>
 
           {/* Center: Search */}
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 max-w-sm">
             <Tooltip
               title={
                 isArabic
@@ -1272,25 +1161,21 @@ export default function ProjectDetailsPage() {
             </Tooltip>
           </div>
 
-          {/* Right: Filters */}
+          {/* Right: Quick Filters & Dropdowns */}
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="flex items-center gap-1 text-[#736B5E] dark:text-[#9A9183] text-sm ps-1">
-              <FilterOutlined className="text-sm" />
-            </div>
-
             {/* Quick Overdue Filter Button */}
             <Tooltip title={isArabic ? 'عرض المهام المتأخرة فقط' : 'Show only overdue tasks'}>
               <Button
                 type={filters.overdueOnly ? 'primary' : 'default'}
                 danger={filters.overdueOnly || overdueCount > 0}
-                icon={<ClockCircleOutlined className="text-sm" />}
+                icon={<ClockCircleOutlined className="text-xs" />}
                 onClick={() => updateFilterField('overdueOnly', !filters.overdueOnly)}
                 size="middle"
-                className="tactile-btn flex items-center gap-1.5 font-semibold text-sm border-[#DDDAD3] dark:border-[#2C2824] rounded"
+                className="tactile-btn flex items-center gap-1 font-semibold text-xs border-[#DDDAD3] dark:border-[#2C2824] rounded"
               >
                 {t('overdueFilter')}
                 {overdueCount > 0 && (
-                  <span className="ms-1 text-xs font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-[#9C2E1F] dark:text-[#EE8A78] tnum">
+                  <span className="ms-1 text-[11px] font-bold px-1.5 py-0.2 rounded bg-rose-500/20 text-[#9C2E1F] dark:text-[#EE8A78] tnum">
                     {overdueCount}
                   </span>
                 )}
@@ -1301,10 +1186,10 @@ export default function ProjectDetailsPage() {
             <Tooltip title={isArabic ? 'عرض المهام المسندة إلي فقط' : 'Show only tasks assigned to me'}>
               <Button
                 type={filters.myTasksOnly ? 'primary' : 'default'}
-                icon={<UserOutlined className="text-sm" />}
+                icon={<UserOutlined className="text-xs" />}
                 onClick={() => updateFilterField('myTasksOnly', !filters.myTasksOnly)}
                 size="middle"
-                className={`tactile-btn flex items-center gap-1.5 font-semibold text-sm border-[#DDDAD3] dark:border-[#2C2824] rounded ${
+                className={`tactile-btn flex items-center gap-1 font-semibold text-xs border-[#DDDAD3] dark:border-[#2C2824] rounded ${
                   filters.myTasksOnly
                     ? '!bg-[#7A5818] dark:!bg-[#D4B26E] !border-transparent !text-white dark:!text-[#1A1408] font-bold'
                     : ''
@@ -1314,12 +1199,12 @@ export default function ProjectDetailsPage() {
               </Button>
             </Tooltip>
 
-            {/* Dropdown Filters */}
+            {/* Status Dropdown */}
             <Select
               value={filters.statusFilter}
               onChange={(val) => updateFilterField('statusFilter', val)}
               size="middle"
-              className="w-32 text-sm font-semibold"
+              className="w-28 text-xs font-semibold"
               options={[
                 { value: 'all', label: t('allStatus') },
                 { value: 'todo', label: t('statusTodo') },
@@ -1328,17 +1213,18 @@ export default function ProjectDetailsPage() {
               ]}
             />
 
+            {/* Priority Dropdown */}
             <Select
               value={filters.priorityFilter}
               onChange={(val) => updateFilterField('priorityFilter', val)}
               size="middle"
-              className="w-32 text-sm font-semibold"
+              className="w-28 text-xs font-semibold"
               options={[
                 { value: 'all', label: t('allPriority') },
                 {
                   value: 'high',
                   label: (
-                    <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center justify-between gap-1">
                       <span>{t('priorityHigh')}</span>
                       <PrioritySignalIcon priority="high" size="sm" />
                     </div>
@@ -1347,7 +1233,7 @@ export default function ProjectDetailsPage() {
                 {
                   value: 'medium',
                   label: (
-                    <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center justify-between gap-1">
                       <span>{t('priorityMedium')}</span>
                       <PrioritySignalIcon priority="medium" size="sm" />
                     </div>
@@ -1356,7 +1242,7 @@ export default function ProjectDetailsPage() {
                 {
                   value: 'low',
                   label: (
-                    <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center justify-between gap-1">
                       <span>{t('priorityLow')}</span>
                       <PrioritySignalIcon priority="low" size="sm" />
                     </div>
@@ -1365,11 +1251,12 @@ export default function ProjectDetailsPage() {
               ]}
             />
 
+            {/* Assignee Dropdown */}
             <Select
               value={filters.assigneeFilter}
               onChange={(val) => updateFilterField('assigneeFilter', val)}
               size="middle"
-              className="w-36 text-sm font-semibold"
+              className="w-32 text-xs font-semibold"
               options={[
                 { value: 'all', label: t('allMembers') },
                 { value: 'unassigned', label: t('unassigned') },
@@ -1385,7 +1272,7 @@ export default function ProjectDetailsPage() {
               value={filters.sortBy}
               onChange={(val) => updateFilterField('sortBy', val as SortByOption)}
               size="middle"
-              className="w-36 text-sm font-semibold"
+              className="w-32 text-xs font-semibold"
               options={[
                 { value: 'default', label: t('sortDefault') },
                 { value: 'priority', label: t('sortPriority') },
@@ -1404,7 +1291,7 @@ export default function ProjectDetailsPage() {
                   type="link"
                   size="middle"
                   onClick={handleResetFilters}
-                  className="!text-[#7A5818] dark:!text-[#D4B26E] font-bold text-sm"
+                  className="!text-[#7A5818] dark:!text-[#D4B26E] font-bold text-xs"
                 >
                   {t('resetFilters')}
                 </Button>
@@ -1412,7 +1299,7 @@ export default function ProjectDetailsPage() {
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Main View: Kanban Board vs Table */}
       {viewMode === 'kanban' ? (
