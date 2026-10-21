@@ -24,13 +24,13 @@ const CONFIG = {
   publicRoutes: ['/', '/login', '/register'],
 } as const;
 
-// الستايلات الأساسية - مثبتين الارتفاع h-screen و overflow-hidden عشان نمنع أي نزول أو التفاف للسايد بار
+// الستايلات الأساسية - مثبتين الارتفاع h-screen و flex-row وموحدين الأرضية مع الكانفاس بدون أي تباين مصطنع
 const STYLES = {
   rootContainer:
-    'h-screen flex flex-col bg-[#F4F4F2] dark:bg-[#0C0B0A] text-[#1B1915] dark:text-[#EFE9DD] transition-colors overflow-hidden',
+    'h-screen flex flex-col bg-[var(--bg)] text-[var(--text)] transition-colors overflow-hidden',
   publicMain: 'flex-1 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 overflow-y-auto',
-  appBody: 'flex-1 flex min-h-0 w-full overflow-hidden relative',
-  appMain: 'flex-1 min-w-0 p-3 sm:p-4 lg:p-5 w-full overflow-y-auto',
+  appBody: 'flex-1 flex flex-row min-h-0 w-full overflow-hidden relative bg-[var(--bg)]',
+  appMain: 'flex-1 min-w-0 p-3 sm:p-4 lg:p-5 w-full overflow-y-auto bg-[var(--bg)]',
 } as const;
 
 // ============================================================================
@@ -55,8 +55,13 @@ function getInitialSidebarCollapsed(): boolean {
 }
 
 // ============================================================================
-// 5. المكون الرئيسي (AppShell)
-// الهيكل العام: النافبار فوق، وجواه السايد بار ع جنب والمحتوى بالنص
+// 5. المكونات الفرعية (Sub-Components)
+// ============================================================================
+// المكونات الفرعية مدمجة بشكل مباشر داخل الهيكل
+
+// ============================================================================
+// 6. المكون الرئيسي (AppShell)
+// الهيكل العام: النافبار فوق على أرضية الكانفاس، وجواه السايد بار ع جنب والمحتوى بالنص
 // ============================================================================
 export default function AppShell({ children }: AppShellProps) {
   const { user } = useAuth();
@@ -96,7 +101,7 @@ export default function AppShell({ children }: AppShellProps) {
         try {
           localStorage.setItem(CONFIG.sidebarStorageKey, String(next));
         } catch {
-          // ignore
+          // نتجاهل أي خطأ بحفظ الـ localStorage
         }
       }
       return next;
@@ -107,7 +112,7 @@ export default function AppShell({ children }: AppShellProps) {
 
   return (
     <div className={STYLES.rootContainer}>
-      {/* النافبار العلوي */}
+      {/* النافبار العلوي المبني على نفس كانفاس الموقع بدون فريم زجاجي أو بلور مصطنع */}
       <Navbar
         onToggleSidebar={!isPublicPage ? handleToggleSidebar : undefined}
         onOpenCommandPalette={() => setCommandPaletteOpen(true)}
@@ -119,7 +124,7 @@ export default function AppShell({ children }: AppShellProps) {
       ) : (
         // جسم التطبيق لمساحة العمل
         <div className={STYLES.appBody}>
-          {/* السايد بار بالديسكتوب: مثبت h-full و shrink-0 عشان ما ينزل لتحت بالمرة */}
+          {/* السايد بار بالديسكتوب: مثبت h-full و shrink-0 وموحد مع أرضية الكانفاس */}
           <div className="hidden md:flex h-full shrink-0">
             <AppSidebar
               collapsed={sidebarCollapsed}
@@ -135,7 +140,12 @@ export default function AppShell({ children }: AppShellProps) {
             placement={isRTL ? 'right' : 'left'}
             width={280}
             closable={false}
-            styles={{ body: { padding: 0 } }}
+            styles={{
+              body: {
+                padding: 0,
+                backgroundColor: 'var(--bg)',
+              },
+            }}
             className="md:hidden"
           >
             <AppSidebar

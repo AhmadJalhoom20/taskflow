@@ -22,27 +22,27 @@ export const PRIORITY_SIGNAL_THEMES: Record<
 > = {
   low: {
     container:
-      'bg-[#F0FDF4] dark:bg-[#062419]/70 text-[#16A34A] dark:text-[#4ADE80] border-[#BBF7D0] dark:border-[#14532D]/70',
-    text: 'text-[#16A34A] dark:text-[#4ADE80]',
-    border: 'border-[#BBF7D0] dark:border-[#14532D]/70',
+      'bg-[#EBEAE5] dark:bg-[#1C1A17] text-[#4F493F] dark:text-[#B8AFA0] border-[#DAD7CF] dark:border-[#2A2621]',
+    text: 'text-[#4F493F] dark:text-[#B8AFA0]',
+    border: 'border-[#DAD7CF] dark:border-[#2A2621]',
     level: 1,
     defaultArabic: 'منخفضة',
     defaultEnglish: 'Low',
   },
   medium: {
     container:
-      'bg-[#EFF6FF] dark:bg-[#0D1E3A]/70 text-[#2563EB] dark:text-[#60A5FA] border-[#BFDBFE] dark:border-[#1D4ED8]/60',
-    text: 'text-[#2563EB] dark:text-[#60A5FA]',
-    border: 'border-[#BFDBFE] dark:border-[#1D4ED8]/60',
+      'bg-[#E3EDF8] dark:bg-[#132034] text-[#174378] dark:text-[#8DB4E8] border-[#8DB4E8]/30 dark:border-[#8DB4E8]/30',
+    text: 'text-[#174378] dark:text-[#8DB4E8]',
+    border: 'border-[#8DB4E8]/30 dark:border-[#8DB4E8]/30',
     level: 2,
     defaultArabic: 'متوسطة',
     defaultEnglish: 'Medium',
   },
   high: {
     container:
-      'bg-[#FEF2F2] dark:bg-[#2C0F13]/70 text-[#DC2626] dark:text-[#F87171] border-[#FECACA] dark:border-[#991B1B]/60',
-    text: 'text-[#DC2626] dark:text-[#F87171]',
-    border: 'border-[#FECACA] dark:border-[#991B1B]/60',
+      'bg-[#FCE8E5] dark:bg-[#2E1613] text-[#8E2517] dark:text-[#EE8A78] border-[#EE8A78]/30 dark:border-[#EE8A78]/30',
+    text: 'text-[#8E2517] dark:text-[#EE8A78]',
+    border: 'border-[#EE8A78]/30 dark:border-[#EE8A78]/30',
     level: 3,
     defaultArabic: 'عالية',
     defaultEnglish: 'High',

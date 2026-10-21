@@ -1,7 +1,8 @@
 'use client';
 
 // ============================================================================
-// 1. IMPORTS
+// 1. الاستيرادات (Imports)
+// بنجيب الأيقونات من Ant Design وأدوات التحكم بالمستخدم والثيم واللغة
 // ============================================================================
 import React from 'react';
 import Link from 'next/link';
@@ -21,23 +22,24 @@ import { useLanguage } from '@/context/LanguageContext';
 import Logo from '@/components/ui/Logo';
 
 // ============================================================================
-// 2. CONFIGURATION, CONSTANTS & STYLES (EASY EDIT ZONE)
+// 2. منطقة التعديل السريع (Constants & Styles)
+// ستايلات النافبار موحدة بالكامل مع توكنز الكانفاس بدون أي تباين زجاجي أو أكواد ألوان عشوائية
 // ============================================================================
 const STYLES = {
   header:
-    'sticky top-0 z-50 border-b border-[#DDDAD3] dark:border-[#2C2824] bg-[#FFFFFF]/95 dark:bg-[#11100E]/95 backdrop-blur-md transition-colors',
+    'sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--bg)] transition-colors',
   commandButton:
-    'tactile-btn hidden sm:flex items-center justify-between gap-2 px-3 py-1 text-sm text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD] bg-white dark:bg-[#141211] border border-[#DDDAD3] dark:border-[#2C2824] rounded-md transition-all w-44 sm:w-52 cursor-pointer hover:border-[#7A5818] dark:hover:border-[#D4B26E]',
+    'tactile-btn hidden sm:flex items-center justify-between gap-2 px-3 py-1 text-sm text-[var(--text-2)] hover:text-[var(--text)] bg-[var(--surface-2)] border border-[var(--line)] hover:border-[var(--line-strong)] rounded-md transition-all w-44 sm:w-52 cursor-pointer',
   languageButton:
-    'tactile-btn flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-[#1B1915] dark:text-[#EFE9DD] hover:text-[#7A5818] dark:hover:text-[#D4B26E] bg-white hover:bg-[#EDECE8] dark:bg-[#141211] dark:hover:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824]',
+    'tactile-btn flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-[var(--text)] hover:text-[var(--accent)] bg-[var(--surface-2)] hover:bg-[var(--surface-hover)] border border-[var(--line)]',
   activeBreadcrumb:
-    'px-2.5 py-0.5 rounded font-bold bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 text-[#7A5818] dark:text-[#D4B26E] border border-[#7A5818]/25 dark:border-[#D4B26E]/30 text-sm',
+    'px-2.5 py-0.5 rounded font-bold bg-[var(--accent-subtle)] text-[var(--accent)] border border-[var(--accent)]/20 text-sm',
   inactiveBreadcrumb:
-    'px-1.5 py-0.5 text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD] font-medium text-sm',
+    'px-1.5 py-0.5 text-[var(--text-2)] hover:text-[var(--text)] font-medium text-sm',
 };
 
 // ============================================================================
-// 3. TYPES & INTERFACES
+// 3. الأنواع والواجهات (Types & Interfaces)
 // ============================================================================
 export interface NavbarProps {
   onToggleSidebar?: () => void;
@@ -45,12 +47,13 @@ export interface NavbarProps {
 }
 
 // ============================================================================
-// 4. HELPER FUNCTIONS
+// 4. دوال مساعدة (Helper Functions)
 // ============================================================================
-// Pure navigation helpers
+// دوال مساعدة للتنقل والتحكم بالروابط
 
 // ============================================================================
-// 5. SUB-COMPONENTS
+// 5. المكونات الفرعية (Sub-Components)
+// زر تبديل اللغة السريع (عربي / English)
 // ============================================================================
 function LanguageSwitchButton({
   language,
@@ -78,7 +81,8 @@ function LanguageSwitchButton({
 }
 
 // ============================================================================
-// 6. MAIN COMPONENT
+// 6. المكون الرئيسي (Navbar)
+// الشريط العلوي الموحد: الشعار ومسار التنقل ع الشمال، والبحث والمظهر والبروفايل ع اليمين
 // ============================================================================
 export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: NavbarProps = {}) {
   const { user, logout } = useAuth();
@@ -89,7 +93,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
   const isArabic = language === 'ar';
   const isOwner = user?.role === 'owner';
 
-  // Guard clause for guest user (public view)
+  // معالجة حالة الزائر غير المسجل (صفحات الهبوط وتسجيل الدخول)
   if (!user) {
     return (
       <header className={STYLES.header}>
@@ -124,7 +128,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                   size="small"
                   icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
                   onClick={toggleTheme}
-                  className="text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD]"
+                  className="text-[var(--text-2)] hover:text-[var(--text)]"
                   aria-label="Toggle theme"
                 />
               </Tooltip>
@@ -133,7 +137,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                 <Link href="/login">
                   <Button
                     size="middle"
-                    className="tactile-btn border-[#DDDAD3] dark:border-[#2C2824] text-[#1B1915] dark:text-[#EFE9DD] font-semibold text-sm bg-white dark:bg-[#141211]"
+                    className="tactile-btn border-[var(--line)] text-[var(--text)] font-semibold text-sm bg-[var(--surface)] hover:bg-[var(--surface-hover)]"
                   >
                     {t('signIn')}
                   </Button>
@@ -145,7 +149,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                   <Button
                     type="primary"
                     size="middle"
-                    className="tactile-btn !bg-[#7A5818] hover:!bg-[#5E420E] dark:!bg-[#D4B26E] dark:hover:!bg-[#E2C88E] !border-transparent font-bold text-sm !text-white dark:!text-[#1A1408] shadow-xs"
+                    className="tactile-btn !bg-[var(--accent)] hover:!bg-[var(--accent-hover)] !border-transparent font-bold text-sm !text-[var(--on-accent)] shadow-xs"
                   >
                     {t('getStarted')}
                   </Button>
@@ -158,17 +162,17 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
     );
   }
 
-  // Authenticated user menu dropdown items
+  // عناصر القائمة المنسدلة لملف المستخدم
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'user-info',
       type: 'group',
       label: (
         <div className="py-1">
-          <p className="font-semibold text-[#1B1915] dark:text-[#EFE9DD] text-sm">{user.displayName}</p>
-          <p className="text-xs text-[#5A5348] dark:text-[#9A9183] font-mono">{user.email}</p>
+          <p className="font-semibold text-[var(--text)] text-sm">{user.displayName}</p>
+          <p className="text-xs text-[var(--text-2)] font-mono">{user.email}</p>
           <span
-            className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold bg-[#EDECE8] dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] border border-[#DDDAD3] dark:border-[#2C2824] ${
+            className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-semibold bg-[var(--surface-2)] text-[var(--text)] border border-[var(--line)] ${
               isArabic ? 'font-sans' : 'font-mono uppercase tracking-wider'
             }`}
           >
@@ -191,7 +195,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
     <header className={STYLES.header}>
       <div className="w-full px-4 sm:px-6">
         <div className="flex justify-between items-center h-14">
-          {/* Left: Sidebar Toggle + Brand & Breadcrumb */}
+          {/* الجانب الأيمن أو الأيسر حسب اللغة: زر السايد بار والشعار ومسار التنقل */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             {onToggleSidebar && (
               <Tooltip title={isRTL ? 'تبديل الشريط الجانبي' : 'Toggle Sidebar'}>
@@ -200,7 +204,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                   size="small"
                   onClick={onToggleSidebar}
                   icon={<MenuOutlined className="text-sm" />}
-                  className="text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD] -ms-1"
+                  className="text-[var(--text-2)] hover:text-[var(--text)] -ms-1"
                   aria-label="Toggle sidebar"
                 />
               </Tooltip>
@@ -210,7 +214,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
               <Logo size="small" />
             </Link>
 
-            <span className="text-[#DDDAD3] dark:text-[#3A352F] text-sm font-light">/</span>
+            <span className="text-[var(--line-strong)] text-sm font-light">/</span>
 
             <Link
               href="/dashboard"
@@ -221,14 +225,14 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
 
             {pathname === '/projects/new' && (
               <>
-                <span className="text-[#DDDAD3] dark:text-[#3A352F] text-sm font-light">/</span>
+                <span className="text-[var(--line-strong)] text-sm font-light">/</span>
                 <span className={STYLES.activeBreadcrumb}>{t('newProject')}</span>
               </>
             )}
 
             {pathname?.startsWith('/projects/') && pathname !== '/projects/new' && (
               <>
-                <span className="text-[#DDDAD3] dark:text-[#3A352F] text-sm font-light">/</span>
+                <span className="text-[var(--line-strong)] text-sm font-light">/</span>
                 <span className={STYLES.activeBreadcrumb}>
                   {pathname.includes('/settings') ? t('projectSettingsTitle') : t('kanbanBoard')}
                 </span>
@@ -236,9 +240,9 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
             )}
           </div>
 
-          {/* Right Actions */}
+          {/* أدوات التحكم الجانبية: البحث واللغة والثيم والقائمة الشخصية */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Command Palette Trigger */}
+            {/* زر فتح لوحة الأوامر بالديسكتوب */}
             <Tooltip title={`${t('searchPlaceholder')} (Cmd+K / Ctrl+K)`}>
               <button
                 onClick={() => onOpenCommandPalette?.()}
@@ -246,16 +250,16 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                 aria-label="Open command palette"
               >
                 <span className="flex items-center gap-1.5 truncate">
-                  <SearchOutlined className="text-xs text-[#7A5818] dark:text-[#D4B26E]" />
+                  <SearchOutlined className="text-xs text-[var(--accent)]" />
                   <span className="truncate">{t('searchPlaceholder')}</span>
                 </span>
-                <kbd className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824] shrink-0 font-medium">
+                <kbd className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--line)] shrink-0 font-medium">
                   Cmd+K
                 </kbd>
               </button>
             </Tooltip>
 
-            {/* Mobile Search Button */}
+            {/* أيقونة البحث بالموبايل */}
             <div className="sm:hidden flex items-center">
               <Tooltip title={t('searchPlaceholder')}>
                 <Button
@@ -263,7 +267,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                   size="small"
                   icon={<SearchOutlined />}
                   onClick={() => onOpenCommandPalette?.()}
-                  className="text-[#5A5348] dark:text-[#B5AC9C]"
+                  className="text-[var(--text-2)]"
                   aria-label="Search"
                 />
               </Tooltip>
@@ -275,7 +279,7 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
               tooltipText={t('switchLanguage')}
             />
 
-            {/* Theme Toggle */}
+            {/* زر تبديل الوضع النهاري / الليلي */}
             <Tooltip
               title={
                 themeMode === 'dark'
@@ -293,33 +297,22 @@ export default function Navbar({ onToggleSidebar, onOpenCommandPalette }: Navbar
                 icon={themeMode === 'dark' ? <SunOutlined /> : <MoonOutlined />}
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
-                className="text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD]"
+                className="text-[var(--text-2)] hover:text-[var(--text)]"
               />
             </Tooltip>
 
-            {/* User Dropdown */}
+            {/* صورة الحساب والقائمة المنسدلة */}
             <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
               <Tooltip
                 title={`${user.displayName} (${user.role === 'owner' ? t('owner') : t('member')})`}
               >
-                <div className="flex items-center gap-2 cursor-pointer p-0.5 rounded-md hover:bg-[#EDECE8] dark:hover:bg-[#1C1A17] transition-colors">
+                <div className="flex items-center gap-2 cursor-pointer p-0.5 rounded-md hover:bg-[var(--surface-2)] transition-colors">
                   <Avatar
                     size={30}
                     style={{
-                      backgroundColor: isOwner
-                        ? themeMode === 'dark'
-                          ? '#D4B26E'
-                          : '#7A5818'
-                        : themeMode === 'dark'
-                        ? '#26231F'
-                        : '#DDDAD3',
-                      color: isOwner
-                        ? themeMode === 'dark'
-                          ? '#1A1408'
-                          : '#FFFFFF'
-                        : themeMode === 'dark'
-                        ? '#EFE9DD'
-                        : '#1B1915',
+                      backgroundColor: isOwner ? 'var(--accent)' : 'var(--surface-2)',
+                      color: isOwner ? 'var(--on-accent)' : 'var(--text)',
+                      border: '1px solid var(--line)',
                     }}
                     className="font-bold text-sm"
                   >

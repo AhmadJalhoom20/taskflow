@@ -49,11 +49,12 @@ export function dbAll<T = any>(sql: string, params: any[] = []): Promise<T[]> {
   });
 }
 
-// Database initialization and migrations
+// تفعيل فحص المفاتيح الأجنبية ونمط الـ WAL والمهلة لمنع قفل قاعدة البيانات نهائيا
 export async function initDatabase(): Promise<void> {
-  // Enforce foreign key constraints and WAL journal mode
+  // Enforce foreign key constraints, WAL journal mode, and 5000ms busy timeout
   await dbRun('PRAGMA foreign_keys = ON;');
   await dbRun('PRAGMA journal_mode = WAL;');
+  await dbRun('PRAGMA busy_timeout = 5000;');
 
   // 1. Users table
   await dbRun(`
@@ -114,12 +115,14 @@ export async function initDatabase(): Promise<void> {
     );
   `);
 
-  // Indexes for relational performance
+  // فهارس لتحسين سرعة الاستعلامات والكانبان ولوحة التحكم
   await dbRun('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);');
   await dbRun('CREATE INDEX IF NOT EXISTS idx_projects_owner ON projects(owner_id);');
   await dbRun('CREATE INDEX IF NOT EXISTS idx_project_members_user ON project_members(user_id);');
   await dbRun('CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);');
   await dbRun('CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee_id);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);');
+  await dbRun('CREATE INDEX IF NOT EXISTS idx_tasks_proj_status ON tasks(project_id, status);');
 
   // Seed default demonstration users only if explicitly requested
   if (process.env.SEED_DEMO_DATA === 'true') {

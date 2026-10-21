@@ -23,22 +23,22 @@ import { DataService } from '@/services/dataStore';
 
 // ============================================================================
 // 2. منطقة التعديل السريع (Constants & Styles)
-// هان مفتاح الكاش وستايلات السايد بار عشان تعدل أي زر أو لون بسرعة
+// ستايلات السايد بار موحدة مع أرضية الكانفاس بدون أي تباين مصطنع أو فريم منفصل
 // ============================================================================
 const CACHE_KEY = 'taskflow_cached_projects';
 
 const STYLES = {
-  // السايد بار مثبت h-full و shrink-0 عشان ما ينزل لتحت بالمرة
+  // السايد بار مثبت h-full ومبني مباشرة على نفس لون الكانفاس var(--bg) مع خط فاصل نحيف
   sidebarBase:
-    'relative flex flex-col shrink-0 border-e border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#11100E] transition-all duration-200 select-none z-30 h-full',
+    'relative flex flex-col shrink-0 border-e border-[var(--line)] bg-[var(--bg)] transition-all duration-200 select-none z-30 h-full',
   primaryNewProjectBtn:
-    'tactile-btn !bg-[#7A5818] hover:!bg-[#5E420E] dark:!bg-[#D4B26E] dark:hover:!bg-[#E2C88E] !border-transparent !text-white dark:!text-[#1A1408] font-bold text-sm shadow-xs',
+    'tactile-btn !bg-[var(--accent)] hover:!bg-[var(--accent-hover)] !border-transparent !text-[var(--on-accent)] font-bold text-sm shadow-xs',
   navLinkActive:
-    'bg-[#7A5818]/10 dark:bg-[#D4B26E]/15 text-[#7A5818] dark:text-[#D4B26E] font-bold border border-[#7A5818]/25 dark:border-[#D4B26E]/30',
+    'bg-[var(--accent-subtle)] text-[var(--accent)] font-bold border border-[var(--accent)]/20',
   navLinkInactive:
-    'text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD] hover:bg-[#EDECE8] dark:hover:bg-[#1C1A17] font-medium',
+    'text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] font-medium',
   kbdBadge:
-    'text-[10px] font-mono px-1.5 py-0.5 rounded bg-[#EDECE8] dark:bg-[#1C1A17] text-[#5A5348] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]',
+    'text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--line)]',
 };
 
 // ============================================================================
@@ -94,14 +94,14 @@ function SidebarProjectItem({
           isActive ? STYLES.navLinkActive : STYLES.navLinkInactive
         } ${collapsed ? 'justify-center !px-0' : ''}`}
       >
-        <div className="w-2 h-2 rounded-full bg-[#7A5818] dark:bg-[#D4B26E] shrink-0" />
+        <div className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0" />
         {!collapsed && (
           <div className="flex items-center justify-between flex-1 truncate">
             <span className="truncate text-xs sm:text-sm">{project.name}</span>
             {isOwner ? (
-              <CrownOutlined className="text-[11px] text-[#7A5818] dark:text-[#D4B26E] shrink-0 opacity-70 group-hover:opacity-100" />
+              <CrownOutlined className="text-[11px] text-[var(--accent)] shrink-0 opacity-80 group-hover:opacity-100" />
             ) : (
-              <span className="text-[10px] font-mono text-[#736B5E] dark:text-[#9A9183] shrink-0">
+              <span className="text-[10px] font-mono text-[var(--text-3)] shrink-0">
                 {project.memberIds.length}
               </span>
             )}
@@ -144,7 +144,7 @@ export default function AppSidebar({
           }
         }
       } catch {
-        // preserve cache on network hitch
+        // بنحافظ على الكاش في حال صار أي بطء بالشبكة
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -157,7 +157,7 @@ export default function AppSidebar({
     };
   }, [user, pathname]);
 
-  // Guard clause for unauthenticated users
+  // حارس أمان في حال المستخدم مش مسجل دخول
   if (!user) return null;
 
   const isOwner = user.role === 'owner';
@@ -167,24 +167,24 @@ export default function AppSidebar({
       className={`${STYLES.sidebarBase} ${collapsed ? 'w-16' : 'w-64'}`}
       aria-label={isArabic ? 'الشريط الجانبي' : 'Sidebar Navigation'}
     >
-      {/* Workspace Header */}
+      {/* رأس مساحة العمل والمعلومات */}
       <div
-        className={`p-3 border-b border-[#DDDAD3] dark:border-[#2C2824] flex items-center ${
+        className={`p-3 border-b border-[var(--line)] bg-[var(--bg)] flex items-center ${
           collapsed ? 'justify-center' : 'justify-between'
         }`}
       >
         {!collapsed ? (
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408] font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--on-accent)] font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
               TF
             </div>
             <div className="truncate">
-              <div className="font-bold text-sm text-[#1B1915] dark:text-[#EFE9DD] truncate leading-tight font-display">
+              <div className="font-bold text-sm text-[var(--text)] truncate leading-tight font-display">
                 {user.displayName ? `${user.displayName.split(' ')[0]}'s Workspace` : 'TaskFlow'}
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#235832] dark:bg-[#9CC5A1]" />
-                <span className="text-[11px] font-mono text-[#5A5348] dark:text-[#B5AC9C]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--st-done-fg)]" />
+                <span className="text-[11px] font-mono text-[var(--text-2)]">
                   {isOwner ? (isArabic ? 'مالك' : 'Owner') : isArabic ? 'عضو' : 'Member'}
                 </span>
               </div>
@@ -195,13 +195,13 @@ export default function AppSidebar({
             title={user.displayName ? `${user.displayName}'s Workspace` : 'Workspace'}
             placement={isRTL ? 'left' : 'right'}
           >
-            <div className="w-8 h-8 rounded-lg bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408] font-bold flex items-center justify-center text-sm shadow-xs cursor-pointer">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--on-accent)] font-bold flex items-center justify-center text-sm shadow-xs cursor-pointer">
               TF
             </div>
           </Tooltip>
         )}
 
-        {/* Collapse toggle button on top right of sidebar */}
+        {/* زر طي السايد بار بالرأس عند عدم الطي */}
         {!collapsed && (
           <Tooltip title={isArabic ? 'تصغير الشريط الجانبي' : 'Collapse Sidebar'}>
             <Button
@@ -209,14 +209,14 @@ export default function AppSidebar({
               size="small"
               onClick={onToggleCollapse}
               icon={isRTL ? <RightOutlined className="text-xs" /> : <LeftOutlined className="text-xs" />}
-              className="text-[#736B5E] hover:text-[#1B1915] dark:text-[#9A9183] dark:hover:text-[#EFE9DD]"
+              className="text-[var(--text-3)] hover:text-[var(--text)]"
               aria-label="Collapse sidebar"
             />
           </Tooltip>
         )}
       </div>
 
-      {/* Primary Action: + New Project */}
+      {/* الزر الرئيسي: إنشاء مشروع جديد */}
       <div className="p-3">
         {!collapsed ? (
           <Link href="/projects/new">
@@ -246,9 +246,9 @@ export default function AppSidebar({
         )}
       </div>
 
-      {/* Navigation Links */}
+      {/* روابط التنقل الرئيسية */}
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
-        {/* Dashboard Link */}
+        {/* رابط لوحة التحكم */}
         <Tooltip title={collapsed ? t('dashboard') : undefined} placement={isRTL ? 'left' : 'right'}>
           <Link
             href="/dashboard"
@@ -261,7 +261,7 @@ export default function AppSidebar({
           </Link>
         </Tooltip>
 
-        {/* Command Palette Trigger */}
+        {/* زر فتح لوحة الأوامر السريعة */}
         {onOpenCommandPalette && (
           <Tooltip
             title={collapsed ? `${t('searchPlaceholder')} (Cmd+K)` : undefined}
@@ -270,7 +270,7 @@ export default function AppSidebar({
             <button
               type="button"
               onClick={onOpenCommandPalette}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[#5A5348] hover:text-[#1B1915] dark:text-[#B5AC9C] dark:hover:text-[#EFE9DD] hover:bg-[#EDECE8] dark:hover:bg-[#1C1A17] font-medium transition-all cursor-pointer ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] font-medium transition-all cursor-pointer ${
                 collapsed ? 'justify-center !px-0' : ''
               }`}
             >
@@ -285,19 +285,19 @@ export default function AppSidebar({
           </Tooltip>
         )}
 
-        {/* Projects List Section */}
+        {/* قسم قائمة المشاريع */}
         <div className="pt-4 pb-1">
           {!collapsed ? (
             <div className="flex items-center justify-between px-3 mb-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[#736B5E] dark:text-[#9A9183]">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-3)]">
                 {isArabic ? 'المشاريع' : 'Projects'}
               </span>
-              <span className="text-[11px] font-mono font-semibold px-1.5 py-0.2 rounded bg-[#EDECE8] dark:bg-[#1C1A17] text-[#736B5E] dark:text-[#9A9183]">
+              <span className="text-[11px] font-mono font-semibold px-1.5 py-0.2 rounded bg-[var(--surface-2)] text-[var(--text-2)] border border-[var(--line)]">
                 {projects.length}
               </span>
             </div>
           ) : (
-            <div className="w-8 mx-auto border-t border-[#DDDAD3] dark:border-[#2C2824] my-2" />
+            <div className="w-8 mx-auto border-t border-[var(--line)] my-2" />
           )}
 
           <div className="space-y-0.5">
@@ -320,7 +320,7 @@ export default function AppSidebar({
             })}
 
             {projects.length === 0 && !collapsed && (
-              <div className="px-3 py-2 text-xs text-[#736B5E] dark:text-[#9A9183] italic">
+              <div className="px-3 py-2 text-xs text-[var(--text-3)] italic">
                 {isArabic ? 'لا توجد مشاريع حالياً' : 'No projects yet'}
               </div>
             )}
@@ -328,8 +328,8 @@ export default function AppSidebar({
         </div>
       </div>
 
-      {/* Footer: Toggle */}
-      <div className="p-2 border-t border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#11100E] shrink-0">
+      {/* أسفل السايد بار: زر الطي والتوسيع */}
+      <div className="p-2 border-t border-[var(--line)] bg-[var(--bg)] shrink-0">
         {collapsed ? (
           <Tooltip
             title={isArabic ? 'توسيع الشريط الجانبي' : 'Expand Sidebar'}
@@ -341,7 +341,7 @@ export default function AppSidebar({
               size="middle"
               onClick={onToggleCollapse}
               icon={isRTL ? <LeftOutlined className="text-xs" /> : <RightOutlined className="text-xs" />}
-              className="text-[#736B5E] hover:text-[#1B1915] dark:text-[#9A9183] dark:hover:text-[#EFE9DD]"
+              className="text-[var(--text-3)] hover:text-[var(--text)]"
               aria-label="Expand sidebar"
             />
           </Tooltip>
@@ -350,7 +350,7 @@ export default function AppSidebar({
             <button
               type="button"
               onClick={onToggleCollapse}
-              className="text-xs text-[#736B5E] hover:text-[#1B1915] dark:text-[#9A9183] dark:hover:text-[#EFE9DD] flex items-center gap-1.5 font-medium cursor-pointer py-1 px-2 rounded hover:bg-[#EDECE8] dark:hover:bg-[#1C1A17] transition-colors"
+              className="text-xs text-[var(--text-3)] hover:text-[var(--text)] flex items-center gap-1.5 font-medium cursor-pointer py-1 px-2 rounded hover:bg-[var(--surface-2)] transition-colors"
             >
               <span>{isArabic ? 'تصغير القائمة' : 'Collapse'}</span>
               {isRTL ? <RightOutlined className="text-[10px]" /> : <LeftOutlined className="text-[10px]" />}

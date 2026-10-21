@@ -65,11 +65,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(data.user);
           setStoredUser(data.user);
         }
-      } catch (err) {
-        console.warn('[TaskFlow Auth] Session verification failed, clearing credentials:', err);
-        removeAuthToken();
-        setStoredUser(null);
-        if (isMounted) setUser(null);
+      } catch (err: any) {
+        // بنفحص إذا الخطأ هو فعلا انتهاء الصلاحية أو غير مصرح (401 / 403) عشان ما نطرد المستخدم إذا النت قطع لحظيا
+        const isAuthError =
+          err?.status === 401 ||
+          err?.status === 403 ||
+          err?.message?.toLowerCase().includes('unauthorized') ||
+          err?.message?.toLowerCase().includes('invalid token') ||
+          err?.message?.toLowerCase().includes('token expired');
+
+        if (isAuthError) {
+          console.warn('[TaskFlow Auth] Session expired or invalid, clearing credentials:', err);
+          removeAuthToken();
+          setStoredUser(null);
+          if (isMounted) setUser(null);
+        } else {
+          // إذا انقطاع شبكة أو السيرفر بعمل إعادة تشغيل، بنحافظ على جلسة المستخدم من الكاش
+          console.info('[TaskFlow Auth] Network or server transient glitch, preserving cached session');
+        }
       } finally {
         if (isMounted) setLoading(false);
       }

@@ -3,92 +3,100 @@
 @tailwind utilities;
 
 :root {
-  /* Taskora Design System — Light (Pearl & Bronze) */
-  --bg: #F4F4F2;
+  /* نظام ألوان تاسك فلو المعتمد — الوضع الفاتح (Alabaster Titanium) */
+  --bg: #F4F4F1;
   --surface: #FFFFFF;
-  --surface-2: #EDECE8;
+  --surface-2: #EBEAE5;
   --surface-overlay: #FFFFFF;
-  --surface-hover: #E8E6E0;
-  --line: #DDDAD3;
-  --line-strong: #C4C0B6;
-  --control-border: #736B5E;
+  --surface-hover: #E5E3DC;
+  --line: #DAD7CF;
+  --line-strong: #BCB8AC;
+  --control-border: #8C8476;
 
-  --text: #1B1915;
-  --text-2: #5A5348;
-  --text-3: #736B5E;
+  --text: #141311;
+  --text-2: #4F493F;
+  --text-3: #635B4E;
 
-  /* Accent (Bronze) */
+  /* لون التأكيد والتركيز الرئيسي (Architectural Bronze) */
   --accent: #7A5818;
   --accent-hover: #5E420E;
-  --accent-subtle: #F7F2E8;
+  --accent-subtle: rgba(122, 88, 24, 0.08);
   --on-accent: #FFFFFF;
 
-  /* Sidebar & Header */
-  --sidebar-bg: #11100E;
-  --sidebar-text: #EFE9DD;
-  --sidebar-active-bg: #1C1A17;
-  --sidebar-active-text: #D4B26E;
+  /* ألوان السايد بار والنافبار العلوي الموحدة مع الكانفاس */
+  --sidebar-bg: var(--bg);
+  --sidebar-text: #4F493F;
+  --sidebar-text-strong: #141311;
+  --sidebar-hover-bg: #EBEAE5;
+  --sidebar-active-bg: rgba(122, 88, 24, 0.08);
+  --sidebar-active-text: #7A5818;
+  --sidebar-border: #DAD7CF;
 
-  /* Status Tokens */
-  --st-todo-fg: #5A5348;
-  --st-todo-bg: #EDECE8;
-  --st-progress-fg: #1E4D8A;
+  /* توكنز حالات المهام الموحدة والمريحة للعين بدون فوضى ألوان */
+  --st-todo-fg: #4F493F;
+  --st-todo-bg: #EBEAE5;
+  --st-progress-fg: #174378;
   --st-progress-bg: #E3EDF8;
-  --st-done-fg: #235832;
+  --st-done-fg: #1E522C;
   --st-done-bg: #E1EFE4;
-  --st-overdue-fg: #9C2E1F;
+  --st-overdue-fg: #8E2517;
   --st-overdue-bg: #FCE8E5;
 
-  /* Priority Tokens */
-  --pr-low-fg: #5A5348;
-  --pr-medium-fg: #1E4D8A;
-  --pr-high-fg: #9C2E1F;
+  /* توكنز الأولوية المنسجمة */
+  --pr-low-fg: #4F493F;
+  --pr-medium-fg: #174378;
+  --pr-high-fg: #A64B12;
+  --pr-urgent-fg: #8E2517;
 
-  /* Physical Interaction Springs */
+  /* منحنى فيزياء التفاعل الناعم والواقعي */
   --ease-tactile: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 html.dark {
-  /* Taskora Design System — Dark (Obsidian Ledger) */
-  --bg: #0C0B0A;
-  --surface: #141211;
+  /* نظام ألوان تاسك فلو المعتمد — الوضع الداكن الفخم (Obsidian Precision) */
+  --bg: #0A0908;
+  --surface: #141210;
   --surface-2: #1C1A17;
-  --surface-overlay: #26231F;
-  --surface-hover: #1E1C19;
-  --line: #2C2824;
-  --line-strong: #3A352F;
-  --control-border: #736B5E;
+  --surface-overlay: #24211D;
+  --surface-hover: #201E1A;
+  --line: #2A2621;
+  --line-strong: #3D3730;
+  --control-border: #6B6254;
 
-  --text: #EFE9DD;
-  --text-2: #B5AC9C;
-  --text-3: #9A9183;
+  --text: #F2EDE4;
+  --text-2: #B8AFA0;
+  --text-3: #8F8575;
 
-  /* Accent (Champagne Gold) */
+  /* لون التأكيد والتركيز في الوضع الليلي (Solar Champagne Gold) */
   --accent: #D4B26E;
   --accent-hover: #E2C88E;
   --accent-subtle: rgba(212, 178, 110, 0.12);
   --on-accent: #1A1408;
 
-  /* Sidebar & Header */
-  --sidebar-bg: #11100E;
-  --sidebar-text: #EFE9DD;
-  --sidebar-active-bg: #1C1A17;
+  /* السايد بار والنافبار الموحدة مع الكانفاس */
+  --sidebar-bg: var(--bg);
+  --sidebar-text: #B8AFA0;
+  --sidebar-text-strong: #F2EDE4;
+  --sidebar-hover-bg: #1C1A17;
+  --sidebar-active-bg: rgba(212, 178, 110, 0.12);
   --sidebar-active-text: #D4B26E;
+  --sidebar-border: #2A2621;
 
-  /* Status Tokens */
-  --st-todo-fg: #B3AC9E;
-  --st-todo-bg: #26231F;
+  /* توكنز حالات المهام في الوضع الليلي */
+  --st-todo-fg: #B8AFA0;
+  --st-todo-bg: #1C1A17;
   --st-progress-fg: #8DB4E8;
-  --st-progress-bg: #142136;
+  --st-progress-bg: #132034;
   --st-done-fg: #9CC5A1;
-  --st-done-bg: #152618;
+  --st-done-bg: #132516;
   --st-overdue-fg: #EE8A78;
-  --st-overdue-bg: #331915;
+  --st-overdue-bg: #2E1613;
 
-  /* Priority Tokens */
-  --pr-low-fg: #B5AC9C;
+  /* توكنز الأولوية في الوضع الليلي */
+  --pr-low-fg: #B8AFA0;
   --pr-medium-fg: #8DB4E8;
-  --pr-high-fg: #EE8A78;
+  --pr-high-fg: #E58B44;
+  --pr-urgent-fg: #EE8A78;
 }
 
 body {

@@ -27,31 +27,31 @@ import { PrioritySignalBadge } from '@/components/ui/PrioritySignalBadge';
 // ============================================================================
 export const CARD_STYLES = {
   cardBase:
-    'tactile-card group relative bg-white dark:bg-[#141211] border rounded-xl p-4 space-y-3 cursor-pointer text-start transition-all duration-150 select-none active:scale-[0.99]',
+    'tactile-card group relative bg-white dark:bg-[#141210] border rounded-xl p-4 space-y-3 cursor-pointer text-start transition-all duration-150 select-none active:scale-[0.98]',
   cardDragging:
-    'opacity-25 scale-95 border-dashed border-[#7A5818] dark:border-[#D4B26E] shadow-none',
+    'opacity-35 scale-100 border-dashed border-[#7A5818] dark:border-[#D4B26E] shadow-none bg-[#EBEAE5] dark:bg-[#1C1A17]',
   cardIdle:
-    'border-[#DDDAD3] dark:border-[#2C2824] hover:border-[#7A5818]/60 dark:hover:border-[#D4B26E]/60 hover:shadow-tactile-md shadow-tactile-card dark:shadow-tactile-card-dark',
+    'border-[#DAD7CF] dark:border-[#2A2621] hover:border-[#7A5818]/60 dark:hover:border-[#D4B26E]/60 hover:shadow-tactile-md shadow-tactile-card dark:shadow-tactile-card-dark',
   shortIdBadge:
-    'font-mono text-xs font-semibold text-[#5A5348] dark:text-[#B5AC9C] bg-[#EDECE8] dark:bg-[#1C1A17] px-2.5 py-1 rounded-md border border-[#DDDAD3] dark:border-[#2C2824]',
+    'font-mono text-xs font-semibold text-[#4F493F] dark:text-[#B8AFA0] bg-[#EBEAE5] dark:bg-[#1C1A17] px-2.5 py-1 rounded-md border border-[#DAD7CF] dark:border-[#2A2621]',
   overdueBadge:
-    'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#9C2E1F] text-white shadow-xs',
+    'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-[#8E2517] dark:bg-[#EE8A78] text-white dark:text-[#2E1613] shadow-xs',
 };
 
 export const PRIORITY_STYLES: Record<TaskPriority, { container: string; dot: string }> = {
   high: {
     container:
-      'bg-[#FCE8E5] dark:bg-[#331915] text-[#9C2E1F] dark:text-[#EE8A78] border border-[#9C2E1F]/20 dark:border-[#EE8A78]/30',
+      'bg-[#FCE8E5] dark:bg-[#2E1613] text-[#8E2517] dark:text-[#EE8A78] border border-[#EE8A78]/30 dark:border-[#EE8A78]/30',
     dot: 'priority-dot priority-dot-high',
   },
   medium: {
     container:
-      'bg-[#E3EDF8] dark:bg-[#142136] text-[#1E4D8A] dark:text-[#8DB4E8] border border-[#1E4D8A]/20 dark:border-[#8DB4E8]/30',
+      'bg-[#E3EDF8] dark:bg-[#132034] text-[#174378] dark:text-[#8DB4E8] border border-[#8DB4E8]/30 dark:border-[#8DB4E8]/30',
     dot: 'priority-dot priority-dot-normal',
   },
   low: {
     container:
-      'bg-[#EDECE8] text-[#5A5348] dark:bg-[#1C1A17] dark:text-[#B5AC9C] border border-[#DDDAD3] dark:border-[#2C2824]',
+      'bg-[#EBEAE5] text-[#4F493F] dark:bg-[#1C1A17] dark:text-[#B8AFA0] border border-[#DAD7CF] dark:border-[#2A2621]',
     dot: 'priority-dot priority-dot-low',
   },
 };
@@ -129,9 +129,11 @@ function GripHandle({ isRTL }: { isRTL: boolean }) {
 }
 
 // ============================================================================
-// 6. MAIN COMPONENT
+// 6. المكون الرئيسي (KanbanCard)
+// مغلفينه بـ React.memo عشان ما يعيد رندر لكل كروت الصفحة لما نسحب كرت واحد
+// ومحددين عدد أسطر الوصف لسطرين بحد أقصى عشان ما يكبر كرت عن التاني ويضل الشكل متناسق ومسطر
 // ============================================================================
-export function KanbanCard({
+export const KanbanCard = React.memo(function KanbanCard({
   task,
   canEdit,
   canDelete,
@@ -215,11 +217,11 @@ export function KanbanCard({
         {cleanTitle}
       </div>
 
-      {/* Optional Description */}
+      {/* وصف المهمة - مثبتين سطرين بحد أقصى عشان كل الكروت تيجي متناسقة بالارتفاع */}
       {task.description && (
         <div
           dir="auto"
-          className="text-sm sm:text-base text-[#5A5348] dark:text-[#B5AC9C] line-clamp-3 leading-relaxed"
+          className="text-sm text-[#5A5348] dark:text-[#B5AC9C] line-clamp-2 leading-relaxed"
         >
           {task.description}
         </div>
@@ -390,4 +392,4 @@ export function KanbanCard({
       </div>
     </div>
   );
-}
+});

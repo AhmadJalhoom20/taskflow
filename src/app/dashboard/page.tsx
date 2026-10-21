@@ -145,6 +145,7 @@ function KpiMetricCard({
     <Tooltip title={tooltipText} className="w-full h-full block">
       <Card
         variant="outlined"
+        styles={{ body: { height: '100%', padding: 0 } }}
         className={`tactile-card shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all !p-0 cursor-default h-full w-full flex flex-col justify-between ${cardBorderClass}`}
       >
         <div className="p-4 sm:p-5 flex flex-col justify-between h-full space-y-3">

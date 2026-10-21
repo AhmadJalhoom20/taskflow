@@ -59,10 +59,14 @@ import { KanbanCard } from '@/components/kanban/KanbanCard';
 import ProjectDetailSkeleton from '@/components/ui/ProjectDetailSkeleton';
 import { PrioritySignalBadge, PrioritySignalIcon } from '@/components/ui/PrioritySignalBadge';
 
-// بنحمل المودال ودرج تفاصيل المهمة وقت اللزوم عشان الأداء يضل طلقة
+// بنحمل المودال ودرج تفاصيل المهمة والمخطط الزمني وقت اللزوم عشان الأداء يضل طلقة
 const TeamRosterModal = dynamic(() => import('@/components/ui/TeamRosterModal'), { ssr: false });
 const TaskDetailDrawer = dynamic(
   () => import('@/components/kanban/TaskDetailDrawer').then((mod) => mod.TaskDetailDrawer),
+  { ssr: false }
+);
+const ProjectTimelineView = dynamic(
+  () => import('@/components/kanban/ProjectTimelineView'),
   { ssr: false }
 );
 
@@ -148,7 +152,7 @@ const STYLES = {
 // ============================================================================
 // 3. TYPES & INTERFACES
 // ============================================================================
-type ViewMode = 'kanban' | 'table';
+type ViewMode = 'kanban' | 'table' | 'timeline';
 type MobileKanbanColumn = 'todo' | 'in_progress' | 'done';
 type SortByOption = 'default' | 'priority' | 'due_date' | 'title';
 
@@ -1141,6 +1145,15 @@ export default function ProjectDetailsPage() {
                   label: <span className="font-semibold text-xs sm:text-sm px-1">{t('tableView')}</span>,
                   icon: <UnorderedListOutlined className="text-xs sm:text-sm" />,
                 },
+                {
+                  value: 'timeline',
+                  label: (
+                    <span className="font-semibold text-xs sm:text-sm px-1">
+                      {isArabic ? 'المسار الزمني' : 'Timeline'}
+                    </span>
+                  ),
+                  icon: <CalendarOutlined className="text-xs sm:text-sm" />,
+                },
               ]}
             />
           </div>
@@ -1409,7 +1422,7 @@ export default function ProjectDetailsPage() {
             />
           </div>
         </div>
-      ) : (
+      ) : viewMode === 'table' ? (
         /* Table View */
         <Card variant="outlined" className={`${STYLES.card} overflow-hidden !p-0`}>
           <Table
@@ -1424,6 +1437,18 @@ export default function ProjectDetailsPage() {
             })}
           />
         </Card>
+      ) : (
+        /* Horizon Timeline View */
+        <ProjectTimelineView
+          tasks={filteredTasks}
+          projectId={project.id}
+          isOwner={isOwner}
+          currentUserId={user?.uid}
+          onInspect={(id) => setInspectingTaskId(id)}
+          onEdit={openEditTaskModal}
+          onStatusChange={handleQuickStatusChange}
+          onCreateTask={() => openCreateTaskModal('todo')}
+        />
       )}
 
       {/* Task Creation & Edit Modal */}
