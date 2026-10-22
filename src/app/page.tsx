@@ -146,23 +146,38 @@ interface DemoKanbanCardProps {
   task: DemoTaskItem;
   isArabic: boolean;
   onCycle: (id: string) => void;
+  isDragging?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: () => void;
 }
 
-function DemoKanbanCard({ task, isArabic, onCycle }: DemoKanbanCardProps) {
+function DemoKanbanCard({
+  task,
+  isArabic,
+  onCycle,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+}: DemoKanbanCardProps) {
   const isDone = task.status === 'done';
   const isInProgress = task.status === 'in_progress';
 
   return (
     <div
+      draggable
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
       onClick={() => onCycle(task.id)}
-      className={`tactile-card p-2.5 rounded-md border active:scale-[0.98] transition-transform cursor-pointer shadow-xs space-y-2 select-none group ${
+      className={`tactile-card p-2.5 rounded-md border active:scale-[0.98] transition-all cursor-grab active:cursor-grabbing shadow-xs space-y-2 select-none group ${
+        isDragging ? 'opacity-40 scale-95 border-dashed border-[var(--accent)]' : ''
+      } ${
         isDone
           ? 'bg-white/70 dark:bg-[#1C1A17]/70 border-[#9CC5A1]/30 hover:border-[#9CC5A1] opacity-85'
           : isInProgress
           ? 'bg-white dark:bg-[#1C1A17] border-[#8DB4E8]/40 hover:border-[#8DB4E8]'
           : 'bg-white dark:bg-[#1C1A17] border-[#DDDAD3] dark:border-[#2C2824] hover:border-[#7A5818]/60 dark:hover:border-[#D4B26E]/60'
       }`}
-      title={isArabic ? 'انقر لنقل المهمة للحالة التالية' : 'Click to cycle task status'}
+      title={isArabic ? 'اسحب المهمة لعمود آخر أو انقر للنقل الفوري' : 'Drag card to another column or click to cycle'}
     >
       <div className="flex items-center justify-between text-[10px] font-mono">
         <span
@@ -231,6 +246,39 @@ export default function HomePage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const [demoTasks, setDemoTasks] = useState<DemoTaskItem[]>(DEFAULT_DEMO_TASKS);
+  const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<'todo' | 'in_progress' | 'done' | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.setData('text/plain', id);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggingTaskId(id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingTaskId(null);
+    setDragOverCol(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, col: 'todo' | 'in_progress' | 'done') => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverCol !== col) {
+      setDragOverCol(col);
+    }
+  };
+
+  const handleDropTask = (e: React.DragEvent, targetStatus: 'todo' | 'in_progress' | 'done') => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData('text/plain') || draggingTaskId;
+    setDragOverCol(null);
+    setDraggingTaskId(null);
+    if (!taskId) return;
+
+    setDemoTasks((prev) =>
+      prev.map((item) => (item.id === taskId ? { ...item, status: targetStatus } : item))
+    );
+  };
 
   // --- Keyboard Shortcuts Listeners ---
   useEffect(() => {
@@ -447,7 +495,7 @@ export default function HomePage() {
                     type="text"
                     value={filterQuery}
                     onChange={(e) => setFilterQuery(e.target.value)}
-                    placeholder={isArabic ? 'تصفية المهام السريعة...' : 'Filter demo tasks...'}
+                    placeholder={isArabic ? 'تصفية مهام السبرنت...' : 'Filter sprint tasks...'}
                     className="w-full ps-8 pe-7 py-1 text-xs rounded-md border border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#1C1A17] text-[#1B1915] dark:text-[#EFE9DD] placeholder:text-[#5A5348] dark:placeholder:text-[#B5AC9C] focus:outline-none focus:border-[#7A5818] dark:focus:border-[#D4B26E]"
                   />
                   {filterQuery ? (
@@ -529,7 +577,16 @@ export default function HomePage() {
                 {viewMode === 'board' ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {/* Column 1: TODO */}
-                    <div className="rounded-lg bg-[#EDECE8] dark:bg-[#141211] border border-[#DDDAD3] dark:border-[#2C2824] p-3 flex flex-col min-h-[220px]">
+                    <div
+                      onDragOver={(e) => handleDragOver(e, 'todo')}
+                      onDragLeave={() => setDragOverCol(null)}
+                      onDrop={(e) => handleDropTask(e, 'todo')}
+                      className={`rounded-lg bg-[#EDECE8] dark:bg-[#141211] border transition-all p-3 flex flex-col min-h-[220px] ${
+                        dragOverCol === 'todo'
+                          ? 'border-[var(--accent)] ring-2 ring-[var(--accent)]/30 bg-[var(--accent)]/5'
+                          : 'border-[#DDDAD3] dark:border-[#2C2824]'
+                      }`}
+                    >
                       <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
                         <span className="text-xs font-semibold text-[#5A5348] dark:text-[#B5AC9C]">
                           {isArabic ? 'قيد الانتظار' : 'To Do'}
@@ -545,13 +602,25 @@ export default function HomePage() {
                             task={task}
                             isArabic={isArabic}
                             onCycle={cycleTaskStatus}
+                            isDragging={draggingTaskId === task.id}
+                            onDragStart={(e) => handleDragStart(e, task.id)}
+                            onDragEnd={handleDragEnd}
                           />
                         ))}
                       </div>
                     </div>
 
                     {/* Column 2: IN PROGRESS */}
-                    <div className="rounded-lg bg-[#EDECE8] dark:bg-[#141211] border border-[#DDDAD3] dark:border-[#2C2824] p-3 flex flex-col min-h-[220px]">
+                    <div
+                      onDragOver={(e) => handleDragOver(e, 'in_progress')}
+                      onDragLeave={() => setDragOverCol(null)}
+                      onDrop={(e) => handleDropTask(e, 'in_progress')}
+                      className={`rounded-lg bg-[#EDECE8] dark:bg-[#141211] border transition-all p-3 flex flex-col min-h-[220px] ${
+                        dragOverCol === 'in_progress'
+                          ? 'border-[#8DB4E8] ring-2 ring-[#8DB4E8]/30 bg-[#8DB4E8]/5'
+                          : 'border-[#DDDAD3] dark:border-[#2C2824]'
+                      }`}
+                    >
                       <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
                         <span className="text-xs font-semibold text-[#8DB4E8]">
                           {isArabic ? 'قيد التنفيذ' : 'In Progress'}
@@ -567,13 +636,25 @@ export default function HomePage() {
                             task={task}
                             isArabic={isArabic}
                             onCycle={cycleTaskStatus}
+                            isDragging={draggingTaskId === task.id}
+                            onDragStart={(e) => handleDragStart(e, task.id)}
+                            onDragEnd={handleDragEnd}
                           />
                         ))}
                       </div>
                     </div>
 
                     {/* Column 3: DONE */}
-                    <div className="rounded-lg bg-[#EDECE8] dark:bg-[#141211] border border-[#DDDAD3] dark:border-[#2C2824] p-3 flex flex-col min-h-[220px]">
+                    <div
+                      onDragOver={(e) => handleDragOver(e, 'done')}
+                      onDragLeave={() => setDragOverCol(null)}
+                      onDrop={(e) => handleDropTask(e, 'done')}
+                      className={`rounded-lg bg-[#EDECE8] dark:bg-[#141211] border transition-all p-3 flex flex-col min-h-[220px] ${
+                        dragOverCol === 'done'
+                          ? 'border-[#9CC5A1] ring-2 ring-[#9CC5A1]/30 bg-[#9CC5A1]/5'
+                          : 'border-[#DDDAD3] dark:border-[#2C2824]'
+                      }`}
+                    >
                       <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
                         <span className="text-xs font-semibold text-[#9CC5A1]">
                           {isArabic ? 'مكتملة' : 'Done'}
@@ -589,6 +670,9 @@ export default function HomePage() {
                             task={task}
                             isArabic={isArabic}
                             onCycle={cycleTaskStatus}
+                            isDragging={draggingTaskId === task.id}
+                            onDragStart={(e) => handleDragStart(e, task.id)}
+                            onDragEnd={handleDragEnd}
                           />
                         ))}
                       </div>
@@ -660,10 +744,10 @@ export default function HomePage() {
 
                 {/* Tactile prompt */}
                 <div className="mt-3 text-center">
-                  <span className="text-[11px] text-slate-400 font-mono">
+                  <span className="text-[11px] text-[#5A5348] dark:text-[#9A9183] font-mono">
                     {isArabic
-                      ? 'انقر على أي مهمة أعلاه لمشاهدة دورة الانتقال الفورية بين الأعمدة والنسب'
-                      : 'Click any task above to cycle lifecycle state in real time'}
+                      ? 'اسحب وأفلت المهام بين الأعمدة أو انقر عليها للتحديث الفوري لحالة السبرنت'
+                      : 'Drag & drop tasks across sprint columns or click to transition lifecycle state'}
                   </span>
                 </div>
               </div>

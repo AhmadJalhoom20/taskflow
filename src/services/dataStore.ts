@@ -1,4 +1,12 @@
-import { Project, Task, UserProfile, DashboardMetrics, TaskStatus } from '@/types';
+import {
+  Project,
+  Task,
+  UserProfile,
+  DashboardMetrics,
+  TaskStatus,
+  UserSettings,
+  DueSoonTaskItem,
+} from '@/types';
 import { apiRequest, getApiBaseUrl } from '@/lib/api';
 
 interface HealthCheckResult {
@@ -224,5 +232,40 @@ export const DataService = {
     return apiRequest<DashboardMetrics>('/metrics', {
       method: 'GET',
     });
+  },
+
+  // ==========================================
+  // SETTINGS & NOTIFICATIONS
+  // ==========================================
+  async getUserSettings(): Promise<UserSettings> {
+    try {
+      return await apiRequest<UserSettings>('/settings', { method: 'GET' });
+    } catch {
+      return {
+        emailNotifications: true,
+        pushNotifications: true,
+        reminderHours: 24,
+      };
+    }
+  },
+
+  async updateUserSettings(settings: Partial<UserSettings>): Promise<UserSettings> {
+    const res = await apiRequest<{ success: boolean; settings: UserSettings }>('/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+    return res.settings;
+  },
+
+  async getDueSoonTasks(): Promise<DueSoonTaskItem[]> {
+    try {
+      const res = await apiRequest<{ dueSoonTasks: DueSoonTaskItem[] }>(
+        '/settings/notifications/due-soon',
+        { method: 'GET' }
+      );
+      return res.dueSoonTasks || [];
+    } catch {
+      return [];
+    }
   },
 };

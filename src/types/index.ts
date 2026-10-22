@@ -48,6 +48,13 @@ export interface Task {
   updatedAt: string;
 }
 
+export interface CompletionTrendPoint {
+  date: string;
+  day: string;
+  completed: number;
+  created: number;
+}
+
 export interface DashboardMetrics {
   totalProjects: number;
   totalTasks: number;
@@ -55,4 +62,25 @@ export interface DashboardMetrics {
   inProgressCount: number;
   doneCount: number;
   overdueCount: number;
+  completionTrends?: CompletionTrendPoint[];
+}
+
+export interface UserSettings {
+  userId?: string;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  reminderHours: number;
+  theme?: string;
+  language?: string;
+  updatedAt?: string;
+}
+
+export interface DueSoonTaskItem {
+  id: string;
+  projectId: string;
+  projectName?: string;
+  title: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate: string;
 }

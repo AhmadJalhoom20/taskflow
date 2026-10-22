@@ -30,6 +30,7 @@ import { DataService } from '@/services/dataStore';
 import { Project, DashboardMetrics } from '@/types';
 import DashboardSkeleton from '@/components/ui/DashboardSkeleton';
 import WorkspaceOnboarding from '@/components/ui/WorkspaceOnboarding';
+import CompletionTrendChart from '@/components/dashboard/CompletionTrendChart';
 
 // بنحمل مودال التيم وقت الحاجة بس (Lazy Load) عشان نخفف حجم الصفحة
 const TeamRosterModal = dynamic(() => import('@/components/ui/TeamRosterModal'), { ssr: false });
@@ -37,7 +38,6 @@ const { Title, Text, Paragraph } = Typography;
 
 // ============================================================================
 // 2. منطقة التعديل السريع (Constants & Styles)
-// هان حاططلك كل الإعدادات، مفاتيح الكاش، والستايلات عشان تعدل براحتك وبثواني
 // ============================================================================
 const CACHE_KEYS = {
   projects: 'taskflow_cached_projects',
@@ -54,7 +54,7 @@ const DEFAULT_METRICS: DashboardMetrics = {
   overdueCount: 0,
 };
 
-// كلاسات وتنسيقات الستايل بالـ Tailwind - بتعدل الشكل والألوان من هان مباشرة
+// كلاسات وتنسيقات الستايل بالـ Tailwind
 const STYLES = {
   kpiCardBase:
     'tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden !p-0 cursor-default',
@@ -66,7 +66,6 @@ const STYLES = {
 
 // ============================================================================
 // 3. الأنواع والواجهات (Types & Interfaces)
-// واجهات واضحة وخفيفة عشان التايب سكريبت يضل مبسوط وما يرمي أخطاء
 // ============================================================================
 interface KpiCardItemProps {
   title: string;
@@ -89,7 +88,6 @@ interface ProjectCardProps {
 
 // ============================================================================
 // 4. دوال مساعدة (Helper Functions)
-// قراءة وتخزين الكاش السريع بجلسة المتصفح عشان نسرع التحميل وما نثقل ع السيرفر
 // ============================================================================
 function readSessionCache<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -106,11 +104,10 @@ function writeSessionCache<T>(key: string, data: T): void {
   try {
     sessionStorage.setItem(key, JSON.stringify(data));
   } catch {
-    // إذا الكاش مسكر أو مليان منتجاهل الخطأ عادي
+    // Ignore cache write errors
   }
 }
 
-// بنفلتر المشاريع حسب الاسم أو الوصف اللي بيكتبه المستخدم بالبحث
 function filterProjectsByQuery(projects: Project[], query: string): Project[] {
   const clean = query.trim().toLowerCase();
   if (!clean) return projects;
@@ -123,11 +120,7 @@ function filterProjectsByQuery(projects: Project[], query: string): Project[] {
 
 // ============================================================================
 // 5. المكونات الفرعية (Sub-Components)
-// كروت الإحصائيات (KPI) وكرت المشروع الفردي
 // ============================================================================
-
-// كرت الـ KPI: هان وزعنا العناصر صح (الأيقونة فوق عاليمين والعنوان ع الشمال)،
-// وعطينا الكرت flex و h-full عشان كل الكروت تيجي مسطرة بنفس الارتفاع بالزبط وما في كرت يكبر عن التاني
 function KpiMetricCard({
   title,
   count,
@@ -136,7 +129,6 @@ function KpiMetricCard({
   tooltipText,
   isOverdueAttention,
 }: KpiCardItemProps) {
-  // إذا في مهام متأخرة بنميز الكرت بلون تحذيري عشان ينتبهله المستخدم فورا
   const cardBorderClass = isOverdueAttention
     ? 'border-[#EE8A78]/80 dark:border-[#EE8A78]/40 bg-[#FCE8E5] dark:bg-[#331915]'
     : 'border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211]';
@@ -149,7 +141,6 @@ function KpiMetricCard({
         className={`tactile-card shadow-tactile-card dark:shadow-tactile-card-dark relative overflow-hidden transition-all !p-0 cursor-default h-full w-full flex flex-col justify-between ${cardBorderClass}`}
       >
         <div className="p-4 sm:p-5 flex flex-col justify-between h-full space-y-3">
-          {/* السطر العلوي: العنوان والأيقونة المرتبة جنبه */}
           <div className="flex items-center justify-between gap-2">
             <span
               className={`text-xs uppercase tracking-wider font-semibold truncate ${
@@ -163,7 +154,6 @@ function KpiMetricCard({
             <div className="shrink-0">{icon}</div>
           </div>
 
-          {/* الجزء السفلي: الرقم العريض والنص التوضيحي ع كامل عرض الكرت */}
           <div>
             <div
               className={`text-2xl sm:text-3xl font-extrabold tracking-tight tnum font-display ${
@@ -184,7 +174,6 @@ function KpiMetricCard({
   );
 }
 
-// كرت المشروع الفردي: كرت تفاعلي بعرض اسم المشروع، شارة المالك، عدد الأعضاء، ووصف مختصر وزر لفتح الكانبان
 function ProjectCard({
   project,
   currentUserId,
@@ -262,7 +251,6 @@ function ProjectCard({
         {project.description || t('noProjectDescription')}
       </Paragraph>
 
-      {/* صور وأفاتار أعضاء المشروع مع عداد إضافي إذا كان عددهم كبير */}
       <div
         className="flex items-center justify-between pb-3 cursor-pointer group/roster"
         onClick={(e) => {
@@ -314,7 +302,6 @@ function ProjectCard({
         </span>
       </div>
 
-      {/* تاريخ التحديث وزر فتح لوحة الكانبان مباشرة */}
       <div className="pt-3 border-t border-[#DDDAD3] dark:border-[#2C2824] flex items-center justify-between text-xs sm:text-sm">
         <span className="text-[#5A5348] dark:text-[#B5AC9C] text-xs tnum">
           {t('updated')} {formatDateLocalized(project.updatedAt)}
@@ -345,7 +332,6 @@ function ProjectCard({
 
 // ============================================================================
 // 6. المكون الرئيسي (Dashboard Page)
-// هون منطق الصفحة كامل: تحميل البيانات، فلاتر البحث، والتقسيم النظيف
 // ============================================================================
 export default function DashboardPage() {
   const router = useRouter();
@@ -353,7 +339,6 @@ export default function DashboardPage() {
   const { t, language, formatDateLocalized, isRTL } = useLanguage();
   const isArabic = language === 'ar';
 
-  // بنقرأ المشاريع والإحصائيات من كاش المتصفح أول إشي عشان تفتح الصفحة بلمح البصر
   const [projects, setProjects] = useState<Project[]>(() =>
     readSessionCache<Project[]>(CACHE_KEYS.projects, [])
   );
@@ -369,7 +354,6 @@ export default function DashboardPage() {
     return true;
   });
 
-  // أول ما يدخل المستخدم بنشيك ع تسجيل الدخول وبنجيب الداتا الجديدة من السيرفر
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -381,7 +365,6 @@ export default function DashboardPage() {
     }
   }, [user, authLoading, router]);
 
-  // دالة جلب المشاريع والعدادات مع تخزينها بالكاش فورا
   async function loadData() {
     if (!user) return;
     try {
@@ -394,13 +377,12 @@ export default function DashboardPage() {
       writeSessionCache(CACHE_KEYS.projects, projs);
       writeSessionCache(CACHE_KEYS.metrics, m);
     } catch (err) {
-      console.error('صار خطأ بتحميل بيانات الداشبورد:', err);
+      console.error('Error loading dashboard data:', err);
     } finally {
       setLoading(false);
     }
   }
 
-  // حساب نسبة الإنجاز والفلترة مباشرة (Derived State) بدون ما نعمل useEffect زيادة يعلق الدنيا
   const completionRate = useMemo(() => {
     if (!metrics.totalTasks) return 0;
     return Math.round((metrics.doneCount / metrics.totalTasks) * 100);
@@ -410,7 +392,6 @@ export default function DashboardPage() {
     return filterProjectsByQuery(projects, searchQuery);
   }, [projects, searchQuery]);
 
-  // شروط الحماية البسيطة (Guard Clauses) - إذا بحمل أو مش مسجل بنعرض الـ Skeleton ع السريع
   if (authLoading && !user) {
     return <DashboardSkeleton />;
   }
@@ -419,7 +400,6 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  // إذا ما في مشاريع بالمرة، بنعرضله شاشة البداية عشان يعمل أول مشروع اله
   if (projects.length === 0) {
     return (
       <div className="py-4">
@@ -430,7 +410,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* الشريط العلوي: ترحيب بالمستخدم، إيميله، وزر عمل مشروع جديد */}
+      {/* Top Header Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#DDDAD3] dark:border-[#2C2824]">
         <div>
           <Title
@@ -457,9 +437,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* قسم الإحصائيات لمساحة العمل الحالية */}
+      {/* KPI Cards Row */}
       <div className="space-y-6">
-        {/* كروت الإحصائيات الأربعة (KPI): معطيينها items-stretch وكل عمود flex عشان يطلعوا كلهم نفس الطول مسطرة وما في كرت أطول من التاني */}
         <Row gutter={[16, 16]} className="items-stretch">
           <Col xs={24} sm={12} lg={6} className="flex flex-col">
             <KpiMetricCard
@@ -577,9 +556,12 @@ export default function DashboardPage() {
           </Col>
         </Row>
 
-        {/* القسم الرئيسي: مشاريعك ع الشمال (8 أعمدة)، ولوحة سرعة الإنجاز والمهام ع اليمين (4 أعمدة) */}
+        {/* 7-Day Completion Trend Line Chart (Recharts) */}
+        <CompletionTrendChart data={metrics.completionTrends} />
+
+        {/* Projects Section & Sprint Velocity */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-1">
-          {/* الـ 8 أعمدة: قائمة المشاريع والبحث السريع */}
+          {/* 8 Columns: Projects Grid */}
           <div className="lg:col-span-8 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#DDDAD3] dark:border-[#2C2824]">
               <div className="flex items-center gap-2">
@@ -666,9 +648,8 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* الـ 4 أعمدة: كرت سرعة الإنجاز (Sprint Velocity) وتفصيل حالات المهام */}
+          {/* 4 Columns: Sprint Velocity & Task Breakdown */}
           <div className="lg:col-span-4 space-y-4">
-            {/* كرت سرعة الإنجاز والنسبة المئوية */}
             <Card
               variant="outlined"
               className="tactile-card border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] shadow-tactile-card dark:shadow-tactile-card-dark"

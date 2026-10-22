@@ -7,6 +7,7 @@ import authRouter from './routes/auth.js';
 import projectsRouter from './routes/projects.js';
 import tasksRouter from './routes/tasks.js';
 import metricsRouter from './routes/metrics.js';
+import settingsRouter from './routes/settings.js';
 import { initDatabase } from './config/database.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import {
@@ -122,6 +123,11 @@ app.get('/', (req, res) => {
         delete: 'DELETE /api/projects/:id/tasks/:taskId',
       },
       metrics: 'GET /api/metrics',
+      settings: {
+        get: 'GET /api/settings',
+        update: 'PUT /api/settings',
+        dueSoonNotifications: 'GET /api/settings/notifications/due-soon',
+      },
     },
     timestamp: new Date().toISOString(),
   });
@@ -133,8 +139,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/projects', projectsRouter);
 app.use('/api/projects/:id/tasks', tasksRouter);
 app.use('/api/metrics', metricsRouter);
+app.use('/api/settings', settingsRouter);
 
-// 7. 404 Catch-All Handler
+// 8. 404 Catch-All Handler
 app.use((req, res) => {
   res.status(404).json({
     error: `Endpoint not found: ${req.method} ${req.originalUrl}`,
@@ -144,7 +151,7 @@ app.use((req, res) => {
   });
 });
 
-// 8. Centralized Error Handling Middleware
+// 9. Centralized Error Handling Middleware
 app.use(errorHandler);
 
 // Bootstrap SQLite database and start HTTP listener

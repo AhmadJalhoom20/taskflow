@@ -14,6 +14,7 @@ import {
   RightOutlined,
   CrownOutlined,
   SearchOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import { Button, Tooltip } from 'antd';
 import { useAuth } from '@/context/AuthContext';
@@ -284,6 +285,19 @@ export default function AppSidebar({
             </button>
           </Tooltip>
         )}
+
+        {/* رابط إعدادات مساحة العمل */}
+        <Tooltip title={collapsed ? (isArabic ? 'الإعدادات' : 'Settings') : undefined} placement={isRTL ? 'left' : 'right'}>
+          <Link
+            href="/settings"
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all ${
+              pathname === '/settings' ? STYLES.navLinkActive : STYLES.navLinkInactive
+            } ${collapsed ? 'justify-center !px-0' : ''}`}
+          >
+            <SettingOutlined className="text-base shrink-0" />
+            {!collapsed && <span className="truncate">{isArabic ? 'الإعدادات' : 'Settings'}</span>}
+          </Link>
+        </Tooltip>
 
         {/* قسم قائمة المشاريع */}
         <div className="pt-4 pb-1">

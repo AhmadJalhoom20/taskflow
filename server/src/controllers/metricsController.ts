@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types/index.js';
-import { dbGet } from '../config/database.js';
+import { dbGet, dbAll } from '../config/database.js';
 
 interface MetricsAgg {
   total_projects: number;
@@ -11,6 +11,11 @@ interface MetricsAgg {
   overdue_count: number;
 }
 
+interface TrendRow {
+  log_date: string;
+  count: number;
+}
+
 export const getMetrics = async (
   req: AuthenticatedRequest,
   res: Response,
@@ -18,8 +23,10 @@ export const getMetrics = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id || req.user!.uid;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
 
+    // 1. Overall Aggregations
     const agg = await dbGet<MetricsAgg>(
       `SELECT
         COUNT(DISTINCT p.id) AS total_projects,
@@ -35,6 +42,61 @@ export const getMetrics = async (
       [todayStr, userId]
     );
 
+    // 2. Calculate Last 7 Days Date Series
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dateMap = new Map<string, { date: string; day: string; completed: number; created: number }>();
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const isoDate = d.toISOString().split('T')[0];
+      const dayName = dayNames[d.getDay()];
+      dateMap.set(isoDate, { date: isoDate, day: dayName, completed: 0, created: 0 });
+    }
+
+    const startDateStr = Array.from(dateMap.keys())[0];
+
+    // 3. Query Completed Tasks Grouped by Date (using updated_at when status='done')
+    const completedRows = await dbAll<TrendRow>(
+      `SELECT
+        substr(t.updated_at, 1, 10) AS log_date,
+        COUNT(t.id) AS count
+       FROM tasks t
+       JOIN project_members pm ON t.project_id = pm.project_id
+       WHERE pm.user_id = ?
+         AND t.status = 'done'
+         AND substr(t.updated_at, 1, 10) >= ?
+       GROUP BY substr(t.updated_at, 1, 10)`,
+      [userId, startDateStr]
+    );
+
+    for (const row of completedRows) {
+      if (dateMap.has(row.log_date)) {
+        dateMap.get(row.log_date)!.completed = Number(row.count) || 0;
+      }
+    }
+
+    // 4. Query Created Tasks Grouped by Date
+    const createdRows = await dbAll<TrendRow>(
+      `SELECT
+        substr(t.created_at, 1, 10) AS log_date,
+        COUNT(t.id) AS count
+       FROM tasks t
+       JOIN project_members pm ON t.project_id = pm.project_id
+       WHERE pm.user_id = ?
+         AND substr(t.created_at, 1, 10) >= ?
+       GROUP BY substr(t.created_at, 1, 10)`,
+      [userId, startDateStr]
+    );
+
+    for (const row of createdRows) {
+      if (dateMap.has(row.log_date)) {
+        dateMap.get(row.log_date)!.created = Number(row.count) || 0;
+      }
+    }
+
+    const completionTrends = Array.from(dateMap.values());
+
     res.status(200).json({
       totalProjects: agg?.total_projects || 0,
       totalTasks: agg?.total_tasks || 0,
@@ -42,6 +104,7 @@ export const getMetrics = async (
       inProgressCount: agg?.in_progress_count || 0,
       doneCount: agg?.done_count || 0,
       overdueCount: agg?.overdue_count || 0,
+      completionTrends,
       calculatedAt: new Date().toISOString(),
     });
   } catch (error) {

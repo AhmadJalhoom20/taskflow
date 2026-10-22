@@ -100,7 +100,7 @@ function PersonaQuickFillBar({ isArabic, onQuickFill }: PersonaQuickFillBarProps
     <div className="mb-5 p-3 rounded-lg bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824]">
       <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#5A5348] dark:text-[#B5AC9C] mb-2">
         <ThunderboltOutlined className="text-[#7A5818] dark:text-[#D4B26E]" />
-        <span>{isArabic ? 'تعبئة سريعة للحسابات التجريبية:' : '1-Click Demo Personas:'}</span>
+        <span>{isArabic ? 'بيئات تقييم معتمدة سريعة:' : 'Enterprise Test Profiles:'}</span>
       </div>
       <div className="grid grid-cols-3 gap-1.5">
         {DEMO_PERSONAS.map((persona) => (
