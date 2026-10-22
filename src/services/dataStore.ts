@@ -147,14 +147,35 @@ export const DataService = {
     });
   },
 
-  async addProjectMember(projectId: string, memberEmail: string, _userId: string): Promise<Project> {
+  async addProjectMember(
+    projectId: string,
+    memberEmail: string,
+    _userId: string,
+    role: string = 'member'
+  ): Promise<Project> {
     await apiRequest<any>(`/projects/${projectId}/members`, {
       method: 'POST',
-      body: JSON.stringify({ email: memberEmail }),
+      body: JSON.stringify({ email: memberEmail, role }),
     });
 
     const updated = await this.getProjectById(projectId, _userId);
     if (!updated) throw new Error('Failed to retrieve updated project after adding member.');
+    return updated;
+  },
+
+  async updateProjectMemberRole(
+    projectId: string,
+    targetMemberId: string,
+    role: string,
+    _userId: string
+  ): Promise<Project> {
+    await apiRequest<any>(`/projects/${projectId}/members/${targetMemberId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+
+    const updated = await this.getProjectById(projectId, _userId);
+    if (!updated) throw new Error('Failed to retrieve updated project after changing member role.');
     return updated;
   },
 
@@ -267,5 +288,28 @@ export const DataService = {
     } catch {
       return [];
     }
+  },
+
+  // ==========================================
+  // ACCOUNT & CREDENTIALS
+  // ==========================================
+  async updateUserProfile(displayName: string): Promise<{ user: UserProfile }> {
+    return apiRequest<{ user: UserProfile }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ displayName }),
+    });
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  },
+
+  async deleteAccount(): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>('/auth/account', {
+      method: 'DELETE',
+    });
   },
 };

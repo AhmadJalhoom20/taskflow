@@ -16,7 +16,7 @@ export default function AntdProvider({ children }: { children: React.ReactNode }
   const isArabic = language === 'ar';
 
   return (
-    <AntdRegistry>
+
       <ConfigProvider
         locale={isArabic ? arEG : enUS}
         direction={direction}
@@ -108,6 +108,6 @@ export default function AntdProvider({ children }: { children: React.ReactNode }
       >
         <App>{children}</App>
       </ConfigProvider>
-    </AntdRegistry>
+
   );
 }

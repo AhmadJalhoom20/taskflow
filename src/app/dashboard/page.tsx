@@ -347,12 +347,30 @@ export default function DashboardPage() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTeamProject, setSelectedTeamProject] = useState<Project | null>(null);
+  const [activeProjectFilter, setActiveProjectFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       return !sessionStorage.getItem(CACHE_KEYS.projects);
     }
     return true;
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('taskflow_filter_project_id') || 'all';
+      setActiveProjectFilter(saved);
+
+      const handleFilter = (e: CustomEvent<{ projectId: string }>) => {
+        if (e.detail?.projectId !== undefined) {
+          setActiveProjectFilter(e.detail.projectId);
+        }
+      };
+      window.addEventListener('taskflow_project_filter_change' as any, handleFilter);
+      return () => {
+        window.removeEventListener('taskflow_project_filter_change' as any, handleFilter);
+      };
+    }
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -389,8 +407,12 @@ export default function DashboardPage() {
   }, [metrics.totalTasks, metrics.doneCount]);
 
   const filteredProjects = useMemo(() => {
-    return filterProjectsByQuery(projects, searchQuery);
-  }, [projects, searchQuery]);
+    let projs = projects;
+    if (activeProjectFilter && activeProjectFilter !== 'all') {
+      projs = projs.filter((p) => p.id === activeProjectFilter);
+    }
+    return filterProjectsByQuery(projs, searchQuery);
+  }, [projects, searchQuery, activeProjectFilter]);
 
   if (authLoading && !user) {
     return <DashboardSkeleton />;
@@ -569,11 +591,33 @@ export default function DashboardPage() {
                   level={4}
                   className="!mb-0 !text-base !font-bold text-[#1B1915] dark:text-[#EFE9DD] font-display"
                 >
-                  {t('yourAccessibleProjects')}
+                  {activeProjectFilter !== 'all'
+                    ? (projects.find((p) => p.id === activeProjectFilter)?.name || t('yourAccessibleProjects'))
+                    : t('yourAccessibleProjects')}
                 </Title>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#EDECE8] dark:bg-[#1C1A17] border border-[#DDDAD3] dark:border-[#2C2824] text-[#5A5348] dark:text-[#B5AC9C] tnum">
-                  {projects.length}
+                  {filteredProjects.length}
                 </span>
+                {activeProjectFilter !== 'all' && (
+                  <Button
+                    size="small"
+                    type="link"
+                    className="!text-xs !p-0 !text-[var(--accent)]"
+                    onClick={() => {
+                      setActiveProjectFilter('all');
+                      if (typeof window !== 'undefined') {
+                        sessionStorage.setItem('taskflow_filter_project_id', 'all');
+                        window.dispatchEvent(
+                          new CustomEvent('taskflow_project_filter_change', {
+                            detail: { projectId: 'all' },
+                          })
+                        );
+                      }
+                    }}
+                  >
+                    ({isArabic ? 'إلغاء الفلتر' : 'Clear filter'})
+                  </Button>
+                )}
               </div>
               {projects.length > 0 && (
                 <Tooltip
@@ -737,6 +781,10 @@ export default function DashboardPage() {
         onClose={() => setSelectedTeamProject(null)}
         project={selectedTeamProject}
         currentUserId={user?.uid}
+        onProjectUpdate={(updated) => {
+          setSelectedTeamProject(updated);
+          setProjects((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+        }}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { AuthenticatedRequest, Project, ProjectMemberDetail } from '../types/index.js';
 import { dbAll, dbGet, dbRun } from '../config/database.js';
 import { AppError } from '../middlewares/errorHandler.js';
-import { createProjectSchema, updateProjectSchema, addMemberSchema } from '../validators/schemas.js';
+import { createProjectSchema, updateProjectSchema, addMemberSchema, updateMemberRoleSchema } from '../validators/schemas.js';
 
 interface DBProject {
   id: string;
@@ -16,7 +16,7 @@ interface DBProject {
 
 interface DBMemberRow {
   user_id: string;
-  role: 'owner' | 'member' | 'trainee';
+  role: 'owner' | 'maintainer' | 'member' | 'trainee' | 'viewer';
   joined_at: string;
   email: string;
   display_name: string;
@@ -280,7 +280,7 @@ export const addMember = async (
   try {
     const { id } = req.params;
     const userId = req.user!.id || req.user!.uid;
-    const { email } = addMemberSchema.parse(req.body);
+    const { email, role = 'member' } = addMemberSchema.parse(req.body);
 
     const project = await dbGet<DBProject>(
       `SELECT id, owner_id FROM projects WHERE id = ?`,
@@ -291,8 +291,19 @@ export const addMember = async (
       throw new AppError(404, 'Project not found.', 'NOT_FOUND');
     }
 
-    if (project.owner_id !== userId) {
-      throw new AppError(403, 'Only the project owner can add members.', 'FORBIDDEN');
+    // Check if caller is owner or maintainer
+    const callerMember = await dbGet<{ role: string }>(
+      `SELECT role FROM project_members WHERE project_id = ? AND user_id = ?`,
+      [id, userId]
+    );
+
+    const canManageMembers =
+      project.owner_id === userId ||
+      callerMember?.role === 'owner' ||
+      callerMember?.role === 'maintainer';
+
+    if (!canManageMembers) {
+      throw new AppError(403, 'Only project owners and maintainers can add members.', 'FORBIDDEN');
     }
 
     const cleanEmail = email.trim().toLowerCase();
@@ -314,10 +325,11 @@ export const addMember = async (
       throw new AppError(400, `User "${email}" is already a member of this project.`, 'ALREADY_MEMBER');
     }
 
+    const assignedRole = role === 'owner' ? 'maintainer' : role; // Only original creator is workspace owner
     const now = new Date().toISOString();
     await dbRun(
-      `INSERT INTO project_members (project_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)`,
-      [id, targetUser.id, now]
+      `INSERT INTO project_members (project_id, user_id, role, joined_at) VALUES (?, ?, ?, ?)`,
+      [id, targetUser.id, assignedRole, now]
     );
 
     const { memberIds, memberDetails } = await getProjectMembersMap(id);
@@ -325,6 +337,74 @@ export const addMember = async (
     res.status(200).json({
       message: 'Member added successfully.',
       projectId: id,
+      memberIds,
+      memberDetails,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMemberRole = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id, memberId } = req.params;
+    const userId = req.user!.id || req.user!.uid;
+    const { role } = updateMemberRoleSchema.parse(req.body);
+
+    const project = await dbGet<DBProject>(
+      `SELECT id, owner_id FROM projects WHERE id = ?`,
+      [id]
+    );
+
+    if (!project) {
+      throw new AppError(404, 'Project not found.', 'NOT_FOUND');
+    }
+
+    // Check if caller is owner or maintainer
+    const callerMember = await dbGet<{ role: string }>(
+      `SELECT role FROM project_members WHERE project_id = ? AND user_id = ?`,
+      [id, userId]
+    );
+
+    const canManageMembers =
+      project.owner_id === userId ||
+      callerMember?.role === 'owner' ||
+      callerMember?.role === 'maintainer';
+
+    if (!canManageMembers) {
+      throw new AppError(403, 'Only project owners and maintainers can modify roles.', 'FORBIDDEN');
+    }
+
+    // Cannot demote or change the original project owner's role
+    if (memberId === project.owner_id) {
+      throw new AppError(400, 'Project workspace owner role cannot be changed.', 'CANNOT_MODIFY_OWNER');
+    }
+
+    const targetMembership = await dbGet<{ role: string }>(
+      `SELECT role FROM project_members WHERE project_id = ? AND user_id = ?`,
+      [id, memberId]
+    );
+
+    if (!targetMembership) {
+      throw new AppError(404, 'Member not found in this project.', 'NOT_A_MEMBER');
+    }
+
+    await dbRun(
+      `UPDATE project_members SET role = ? WHERE project_id = ? AND user_id = ?`,
+      [role, id, memberId]
+    );
+
+    const { memberIds, memberDetails } = await getProjectMembersMap(id);
+
+    res.status(200).json({
+      message: 'Member role updated successfully.',
+      projectId: id,
+      updatedMemberId: memberId,
+      newRole: role,
       memberIds,
       memberDetails,
     });

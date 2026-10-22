@@ -2,7 +2,7 @@ import { Request } from 'express';
 
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
-export type UserRole = 'owner' | 'member' | 'trainee';
+export type UserRole = 'owner' | 'maintainer' | 'member' | 'trainee' | 'viewer';
 
 export interface UserProfile {
   id: string;
@@ -18,7 +18,7 @@ export interface ProjectMemberDetail {
   uid: string;
   email: string;
   displayName: string;
-  role: 'owner' | 'member' | 'trainee';
+  role: UserRole;
   joinedAt?: string;
 }
 

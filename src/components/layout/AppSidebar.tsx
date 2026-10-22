@@ -15,8 +15,12 @@ import {
   CrownOutlined,
   SearchOutlined,
   SettingOutlined,
+  CaretUpOutlined,
+  CaretDownOutlined,
+  AppstoreOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
-import { Button, Tooltip } from 'antd';
+import { Button, Tooltip, Dropdown, MenuProps } from 'antd';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { Project } from '@/types';
@@ -129,6 +133,42 @@ export default function AppSidebar({
 
   const [projects, setProjects] = useState<Project[]>(readCachedProjects);
   const [loading, setLoading] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('taskflow_filter_project_id') || 'all';
+      setSelectedProjectId(saved);
+
+      const handleStorageChange = (e: CustomEvent<{ projectId: string }>) => {
+        if (e.detail?.projectId !== undefined) {
+          setSelectedProjectId(e.detail.projectId);
+        }
+      };
+      window.addEventListener('taskflow_project_filter_change' as any, handleStorageChange);
+      return () => {
+        window.removeEventListener('taskflow_project_filter_change' as any, handleStorageChange);
+      };
+    }
+  }, []);
+
+  const handleSelectProjectFilter = (projId: string) => {
+    setSelectedProjectId(projId);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('taskflow_filter_project_id', projId);
+      window.dispatchEvent(
+        new CustomEvent('taskflow_project_filter_change', {
+          detail: { projectId: projId },
+        })
+      );
+    }
+  };
+
+  const selectedProjectObj = projects.find((p) => p.id === selectedProjectId);
+  const activeLabel =
+    selectedProjectId === 'all'
+      ? (isArabic ? 'جميع المشاريع' : 'All Projects')
+      : (selectedProjectObj?.name || 'Engineering Core');
 
   useEffect(() => {
     if (!user) return;
@@ -170,34 +210,90 @@ export default function AppSidebar({
     >
       {/* رأس مساحة العمل والمعلومات */}
       <div
-        className={`p-3 border-b border-[var(--line)] bg-[var(--bg)] flex items-center ${
+        className={`p-2.5 border-b border-[var(--line)] bg-[var(--bg)] flex items-center ${
           collapsed ? 'justify-center' : 'justify-between'
         }`}
       >
         {!collapsed ? (
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--on-accent)] font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
-              TF
-            </div>
-            <div className="truncate">
-              <div className="font-bold text-sm text-[var(--text)] truncate leading-tight font-display">
-                {user.displayName ? `${user.displayName.split(' ')[0]}'s Workspace` : 'TaskFlow'}
+          <div className="flex-1 me-1">
+            <Dropdown
+              trigger={['click']}
+              placement="bottomLeft"
+              menu={{
+                items: [
+                  {
+                    key: 'all',
+                    label: (
+                      <div className="flex items-center justify-between gap-3 py-1 font-sans">
+                        <div className="flex items-center gap-2">
+                          <AppstoreOutlined className="text-sm text-[var(--accent)]" />
+                          <span className="font-semibold text-xs text-[#1B1915] dark:text-[#EFE9DD]">
+                            {isArabic ? 'جميع المشاريع' : 'All Projects'}
+                          </span>
+                        </div>
+                        {selectedProjectId === 'all' && (
+                          <CheckOutlined className="text-xs text-[var(--accent)]" />
+                        )}
+                      </div>
+                    ),
+                    onClick: () => handleSelectProjectFilter('all'),
+                  },
+                  {
+                    type: 'divider',
+                  },
+                  ...projects.map((proj) => ({
+                    key: proj.id,
+                    label: (
+                      <div className="flex items-center justify-between gap-3 py-1 font-sans min-w-[180px]">
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="w-2 h-2 rounded-full bg-[var(--accent)] shrink-0" />
+                          <span className="truncate text-xs text-[#1B1915] dark:text-[#EFE9DD]">
+                            {proj.name}
+                          </span>
+                        </div>
+                        {selectedProjectId === proj.id && (
+                          <CheckOutlined className="text-xs text-[var(--accent)] shrink-0" />
+                        )}
+                      </div>
+                    ),
+                    onClick: () => handleSelectProjectFilter(proj.id),
+                  })),
+                ],
+              }}
+            >
+              <div
+                role="button"
+                tabIndex={0}
+                className="flex items-center justify-between p-2 rounded-lg border border-[#DDDAD3] dark:border-[#2C2824] bg-white dark:bg-[#141211] hover:border-[#7A5818]/40 dark:hover:border-[#D4B26E]/40 transition-colors group cursor-pointer"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                  <div className="min-w-0">
+                    <div className="font-bold text-xs text-[#1B1915] dark:text-[#EFE9DD] truncate leading-tight font-display">
+                      {activeLabel}
+                    </div>
+                    <div className="text-[10px] font-mono text-[#5A5348] dark:text-[#9A9183] leading-none mt-0.5">
+                      {selectedProjectId === 'all'
+                        ? `${projects.length} ${isArabic ? 'مشاريع' : 'projects'}`
+                        : 'v2.4 / active'}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col text-[8px] text-[#5A5348] dark:text-[#9A9183] shrink-0 opacity-70 group-hover:opacity-100">
+                  <CaretUpOutlined className="leading-none" />
+                  <CaretDownOutlined className="leading-none -mt-1" />
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--st-done-fg)]" />
-                <span className="text-[11px] font-mono text-[var(--text-2)]">
-                  {isOwner ? (isArabic ? 'مالك' : 'Owner') : isArabic ? 'عضو' : 'Member'}
-                </span>
-              </div>
-            </div>
+            </Dropdown>
           </div>
         ) : (
           <Tooltip
             title={user.displayName ? `${user.displayName}'s Workspace` : 'Workspace'}
             placement={isRTL ? 'left' : 'right'}
           >
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--on-accent)] font-bold flex items-center justify-center text-sm shadow-xs cursor-pointer">
+            <div className="relative w-8 h-8 rounded-lg bg-[var(--accent)] text-[var(--on-accent)] font-bold flex items-center justify-center text-sm shadow-xs cursor-pointer">
               TF
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-[var(--bg)]" />
             </div>
           </Tooltip>
         )}
@@ -210,7 +306,7 @@ export default function AppSidebar({
               size="small"
               onClick={onToggleCollapse}
               icon={isRTL ? <RightOutlined className="text-xs" /> : <LeftOutlined className="text-xs" />}
-              className="text-[var(--text-3)] hover:text-[var(--text)]"
+              className="text-[var(--text-3)] hover:text-[var(--text)] shrink-0"
               aria-label="Collapse sidebar"
             />
           </Tooltip>

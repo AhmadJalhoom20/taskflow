@@ -8,6 +8,8 @@ import AntdProvider from '@/components/providers/AntdProvider';
 import AppShell from '@/components/layout/AppShell';
 import TopProgressBar from '@/components/ui/TopProgressBar';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'TaskFlow | Project & Task Management System',
   description:
@@ -22,14 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link key="font-preconnect-1" rel="preconnect" href="https://fonts.googleapis.com" />
+        <link key="font-preconnect-2" rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
+          key="font-preload"
           rel="preload"
           as="style"
           href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
         />
         <link
+          key="font-stylesheet"
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Instrument+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
         />

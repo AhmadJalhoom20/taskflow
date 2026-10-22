@@ -1,6 +1,6 @@
 export type TaskStatus = 'todo' | 'in_progress' | 'done';
 export type TaskPriority = 'low' | 'medium' | 'high';
-export type UserRole = 'owner' | 'member' | 'trainee';
+export type UserRole = 'owner' | 'maintainer' | 'member' | 'trainee' | 'viewer';
 
 export interface UserProfile {
   id?: string;
@@ -16,7 +16,8 @@ export interface ProjectMemberDetail {
   uid: string;
   email: string;
   displayName: string;
-  role: 'owner' | 'member' | 'trainee';
+  role: 'owner' | 'maintainer' | 'member' | 'trainee' | 'viewer' | string;
+  domainTitle?: string;
   joinedAt?: string;
 }
 
@@ -72,6 +73,10 @@ export interface UserSettings {
   reminderHours: number;
   theme?: string;
   language?: string;
+  fontFamily?: string;
+  fontSize?: 'small' | 'medium' | 'large' | string;
+  dateFormat?: string;
+  timezone?: string;
   updatedAt?: string;
 }
 

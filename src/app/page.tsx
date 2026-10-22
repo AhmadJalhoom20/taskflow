@@ -19,6 +19,8 @@ import {
   UserOutlined,
   CrownOutlined,
   CloseOutlined,
+  EditOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { Button, Avatar, Progress } from 'antd';
 import { useAuth } from '@/context/AuthContext';
@@ -691,6 +693,7 @@ export default function HomePage() {
                             {isArabic ? 'الأولوية' : 'PRIORITY'}
                           </th>
                           <th className="py-2 px-3 text-start">{isArabic ? 'المسؤول' : 'ASSIGNEE'}</th>
+                          <th className="py-2 px-3 text-end">{isArabic ? 'الإجراءات' : 'ACTIONS'}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#DDDAD3] dark:divide-[#2C2824]">
@@ -732,8 +735,25 @@ export default function HomePage() {
                             <td className="py-2.5 px-3">
                               <PrioritySignalBadge priority={t.priority} size="sm" />
                             </td>
-                            <td className="py-2.5 px-3 font-medium text-slate-700 dark:text-slate-300">
-                              {isArabic ? t.assignee.nameAr : t.assignee.nameEn}
+                            <td className="py-2.5 px-3">
+                              <div className="flex items-center gap-2">
+                                <Avatar size={22} className="bg-[#7A5818] dark:bg-[#D4B26E] text-white dark:text-[#1A1408] font-bold text-[10px]">
+                                  {t.assignee.initial}
+                                </Avatar>
+                                <span className="font-medium text-slate-700 dark:text-slate-300">
+                                  {isArabic ? t.assignee.nameAr : t.assignee.nameEn}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 text-end">
+                              <div className="flex items-center justify-end gap-2 text-slate-400">
+                                <span className="hover:text-slate-700 dark:hover:text-slate-200 p-1" title="Edit">
+                                  <EditOutlined className="text-xs" />
+                                </span>
+                                <span className="hover:text-rose-500 p-1" title="Delete">
+                                  <DeleteOutlined className="text-xs" />
+                                </span>
+                              </div>
                             </td>
                           </tr>
                         ))}

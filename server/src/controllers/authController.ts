@@ -177,3 +177,119 @@ export const listAllUsers = async (req: AuthenticatedRequest, res: Response, nex
     next(error);
   }
 };
+
+export const updateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id || req.user!.uid;
+    const { displayName } = req.body;
+
+    if (!displayName || typeof displayName !== 'string' || displayName.trim().length === 0) {
+      throw new AppError(400, 'Display name cannot be empty.', 'VALIDATION_ERROR');
+    }
+
+    const cleanName = displayName.trim();
+    const now = new Date().toISOString();
+
+    await dbRun(
+      `UPDATE users SET display_name = ?, updated_at = ? WHERE id = ?`,
+      [cleanName, now, userId]
+    );
+
+    const user = await dbGet<DBUser>(
+      'SELECT id, email, display_name, role, created_at FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (!user) {
+      throw new AppError(404, 'User not found.', 'NOT_FOUND');
+    }
+
+    const updatedProfile: UserProfile = {
+      id: user.id,
+      uid: user.id,
+      email: user.email,
+      displayName: user.display_name,
+      role: user.role,
+      createdAt: user.created_at,
+    };
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully.',
+      user: updatedProfile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id || req.user!.uid;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      throw new AppError(400, 'Both current and new passwords are required.', 'VALIDATION_ERROR');
+    }
+
+    if (typeof newPassword !== 'string' || newPassword.length < 8) {
+      throw new AppError(400, 'New password must be at least 8 characters.', 'VALIDATION_ERROR');
+    }
+
+    const user = await dbGet<DBUser>(
+      'SELECT id, password_hash FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (!user) {
+      throw new AppError(404, 'User not found.', 'NOT_FOUND');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) {
+      throw new AppError(400, 'Current password is incorrect.', 'INVALID_PASSWORD');
+    }
+
+    const now = new Date().toISOString();
+    const newHash = await bcrypt.hash(newPassword, 12);
+
+    await dbRun(
+      `UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?`,
+      [newHash, now, userId]
+    );
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Password changed successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAccount = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id || req.user!.uid;
+
+    await dbRun(`DELETE FROM users WHERE id = ?`, [userId]);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Account deleted successfully.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};

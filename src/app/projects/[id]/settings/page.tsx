@@ -29,6 +29,7 @@ import {
   Popconfirm,
   Alert,
   Modal,
+  Select,
   Typography,
   App,
 } from 'antd';
@@ -78,6 +79,7 @@ interface GeneralSettingsFormValues {
 
 interface AddMemberFormValues {
   email: string;
+  role: 'member' | 'maintainer' | 'viewer';
 }
 
 // ============================================================================
@@ -145,41 +147,55 @@ interface MemberRowProps {
   currentUserId?: string;
   t: (key: TranslationKey) => string;
   onRemoveMember: (id: string) => void;
+  onUpdateRole: (id: string, role: string) => void;
 }
 
-function MemberRow({ memberId, project, currentUserId, t, onRemoveMember }: MemberRowProps) {
+function MemberRow({ memberId, project, currentUserId, t, onRemoveMember, onUpdateRole }: MemberRowProps) {
   const member = project.memberDetails?.[memberId];
   const isProjectOwner = memberId === project.ownerId;
   const isCurrentUser = memberId === currentUserId;
+  const currentRole = isProjectOwner ? 'owner' : (member?.role || 'member');
 
   return (
     <List.Item
       className="py-3 px-2 rounded hover:bg-[#EDECE8]/50 dark:hover:bg-[#1C1A17] transition-colors"
       actions={[
         isProjectOwner ? (
-          <Tag key="owner" className={STYLES.ownerRbacTag}>
-            {t('owner')}
-          </Tag>
+          <span key="owner-action" className="text-xs italic text-[#5A5348] dark:text-[#9A9183] font-mono">
+            Workspace Owner
+          </span>
         ) : (
-          <Popconfirm
-            key="remove"
-            title={t('removeMemberConfirmTitle')}
-            description={t('removeMemberConfirmDesc')}
-            onConfirm={() => onRemoveMember(memberId)}
-            okText={t('removeAction')}
-            cancelText={t('cancel')}
-            okButtonProps={{ danger: true }}
-          >
-            <Button
-              type="text"
-              danger
-              size="middle"
-              icon={<UserDeleteOutlined />}
-              className="text-sm"
+          <div key="actions" className="flex items-center gap-2">
+            <Select
+              size="small"
+              value={currentRole === 'trainee' ? 'viewer' : currentRole}
+              onChange={(newRole) => onUpdateRole(memberId, newRole)}
+              className="w-28 text-xs"
+              options={[
+                { value: 'maintainer', label: 'Maintainer' },
+                { value: 'member', label: 'Member' },
+                { value: 'viewer', label: 'Viewer' },
+              ]}
+            />
+            <Popconfirm
+              title={t('removeMemberConfirmTitle')}
+              description={t('removeMemberConfirmDesc')}
+              onConfirm={() => onRemoveMember(memberId)}
+              okText={t('removeAction')}
+              cancelText={t('cancel')}
+              okButtonProps={{ danger: true }}
             >
-              {t('removeMemberAction')}
-            </Button>
-          </Popconfirm>
+              <Button
+                type="text"
+                danger
+                size="middle"
+                icon={<UserDeleteOutlined />}
+                className="text-sm"
+              >
+                {t('removeMemberAction')}
+              </Button>
+            </Popconfirm>
+          </div>
         ),
       ]}
     >
@@ -206,6 +222,19 @@ function MemberRow({ memberId, project, currentUserId, t, onRemoveMember }: Memb
                 ({t('youIndicator')})
               </span>
             )}
+            <Tag
+              className={`m-0 text-[10px] font-mono font-semibold uppercase px-1.5 py-0.2 rounded ${
+                isProjectOwner
+                  ? 'border-blue-500/30 bg-blue-500/10 text-blue-400'
+                  : currentRole === 'maintainer'
+                  ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
+                  : currentRole === 'viewer'
+                  ? 'border-cyan-500/30 bg-cyan-500/10 text-cyan-400'
+                  : 'border-slate-500/30 bg-slate-500/10 text-slate-300'
+              }`}
+            >
+              {currentRole}
+            </Tag>
           </div>
         }
         description={
@@ -397,10 +426,11 @@ export default function ProjectSettingsPage() {
   const handleAddMember = async (values: AddMemberFormValues) => {
     if (!user || !project) return;
     const email = values.email.trim();
+    const role = values.role || 'member';
 
     try {
       setIsAddingMember(true);
-      const updated = await DataService.addProjectMember(projectId, email, user.uid);
+      const updated = await DataService.addProjectMember(projectId, email, user.uid, role);
       setProject(updated);
       memberForm.resetFields();
       message.success(t('memberAddedSuccess'));
@@ -408,6 +438,17 @@ export default function ProjectSettingsPage() {
       message.error(err?.message || 'Failed to add member');
     } finally {
       setIsAddingMember(false);
+    }
+  };
+
+  const handleUpdateMemberRole = async (memberId: string, newRole: string) => {
+    if (!user || !project) return;
+    try {
+      const updated = await DataService.updateProjectMemberRole(projectId, memberId, newRole, user.uid);
+      setProject(updated);
+      message.success(isRTL ? 'تم تحديث صلاحية العضو بنجاح' : 'Member role updated successfully');
+    } catch (err: any) {
+      message.error(err?.message || 'Failed to update member role');
     }
   };
 
@@ -573,12 +614,13 @@ export default function ProjectSettingsPage() {
         <Form
           form={memberForm}
           layout="inline"
+          initialValues={{ role: 'member' }}
           onFinish={handleAddMember}
-          className="mb-6 flex gap-2"
+          className="mb-6 flex flex-wrap sm:flex-nowrap gap-2"
         >
           <Form.Item
             name="email"
-            className="flex-1 !me-0"
+            className="flex-1 !me-0 min-w-[200px]"
             rules={[
               { required: true, message: 'Enter member email' },
               { type: 'email', message: 'Enter a valid email' },
@@ -587,10 +629,22 @@ export default function ProjectSettingsPage() {
             <Input
               size="middle"
               prefix={<MailOutlined className="text-[#5A5348] dark:text-[#B5AC9C] me-2" />}
-              placeholder="engineer@company.com"
+              placeholder="colleague@university.edu"
               className={STYLES.inputBase}
             />
           </Form.Item>
+
+          <Form.Item name="role" className="!me-0 w-44">
+            <Select
+              size="middle"
+              options={[
+                { value: 'member', label: isRTL ? 'عضو (قراءة/كتابة)' : 'Member (Read/Write)' },
+                { value: 'maintainer', label: isRTL ? 'مشرف (إدارة)' : 'Maintainer (Admin)' },
+                { value: 'viewer', label: isRTL ? 'مشاهد (قراءة فقط)' : 'Viewer (Read Only)' },
+              ]}
+            />
+          </Form.Item>
+
           <Form.Item className="!me-0">
             <Button
               type="primary"
@@ -618,6 +672,7 @@ export default function ProjectSettingsPage() {
               currentUserId={user?.uid}
               t={t}
               onRemoveMember={handleRemoveMember}
+              onUpdateRole={handleUpdateMemberRole}
             />
           )}
         />

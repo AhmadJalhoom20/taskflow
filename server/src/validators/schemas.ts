@@ -12,6 +12,11 @@ export const updateProjectSchema = z.object({
 
 export const addMemberSchema = z.object({
   email: z.string().trim().email('Invalid email address format'),
+  role: z.enum(['owner', 'maintainer', 'member', 'trainee', 'viewer']).optional().default('member'),
+});
+
+export const updateMemberRoleSchema = z.object({
+  role: z.enum(['owner', 'maintainer', 'member', 'trainee', 'viewer']),
 });
 
 export const createTaskSchema = z.object({

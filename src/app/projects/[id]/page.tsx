@@ -1727,6 +1727,7 @@ export default function ProjectDetailsPage() {
         onClose={() => setIsTeamModalOpen(false)}
         project={project}
         currentUserId={user?.uid}
+        onProjectUpdate={(updated) => setProject(updated)}
       />
     </div>
   );

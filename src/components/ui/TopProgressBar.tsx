@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export default function TopProgressBar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
@@ -26,7 +25,7 @@ export default function TopProgressBar() {
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Global API request indicator
   useEffect(() => {

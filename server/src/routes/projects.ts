@@ -7,6 +7,7 @@ import {
   updateProject,
   deleteProject,
   addMember,
+  updateMemberRole,
   removeMember,
 } from '../controllers/projectsController.js';
 
@@ -21,6 +22,7 @@ router.patch('/:id', updateProject);
 router.delete('/:id', deleteProject);
 
 router.post('/:id/members', addMember);
+router.patch('/:id/members/:memberId', updateMemberRole);
 router.delete('/:id/members/:memberId', removeMember);
 
 export default router;

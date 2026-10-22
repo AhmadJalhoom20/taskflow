@@ -30,6 +30,7 @@ interface AuthContextType {
   register: (name: string, email: string, pass: string, role?: 'owner' | 'member' | 'trainee') => Promise<void>;
   logout: () => Promise<void>;
   switchDemoRole: (role: 'owner' | 'member' | 'trainee') => Promise<void>;
+  updateUser: (updated: Partial<UserProfile>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -165,8 +166,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await login(email, pass);
   };
 
+  const updateUser = (updated: Partial<UserProfile>): void => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const next = { ...prev, ...updated };
+      setStoredUser(next);
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, switchDemoRole }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, switchDemoRole, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
